@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitals — BMI Health Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="masthead__mark">V</div>
+    <div class="masthead__text">
+      <h1>Vitals</h1>
+      <p>A quiet instrument for tracking one number over time.</p>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- LEFT: Input + Gauge -->
+    <section class="panel panel--reading">
+      <form id="bmi-form" class="reading-form">
+        <label class="field">
+          <span>Your name</span>
+          <input type="text" id="username" name="username" placeholder="e.g. Ashmit" required autocomplete="name">
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Weight (kg)</span>
+            <input type="number" id="weight" name="weight" step="0.1" min="1" placeholder="68" required>
+          </label>
+          <label class="field">
+            <span>Height (m)</span>
+            <input type="number" id="height" name="height" step="0.01" min="0.3" placeholder="1.75" required>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary" id="calc-btn">
+          <span>Calculate</span>
+        </button>
+
+        <p class="form-error" id="form-error" role="alert"></p>
+      </form>
+
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 300 170" class="gauge" id="gauge-svg">
+          <!-- Background arc zones -->
+          <path d="M 20 150 A 130 130 0 0 1 62 41" class="zone zone--under"/>
+          <path d="M 62 41 A 130 130 0 0 1 150 20" class="zone zone--normal-a"/>
+          <path d="M 150 20 A 130 130 0 0 1 214 52" class="zone zone--normal-b"/>
+          <path d="M 214 52 A 130 130 0 0 1 260 118" class="zone zone--over"/>
+          <path d="M 260 118 A 130 130 0 0 1 280 150" class="zone zone--obese"/>
+
+          <g id="needle" style="transform-origin: 150px 150px; transform: rotate(-90deg);">
+            <line x1="150" y1="150" x2="150" y2="35" class="needle-line"/>
+            <circle cx="150" cy="150" r="7" class="needle-hub"/>
+          </g>
+        </svg>
+
+        <div class="gauge-readout">
+          <span class="gauge-readout__value" id="bmi-value">—</span>
+          <span class="gauge-readout__label" id="bmi-category">Enter your details</span>
+        </div>
+
+        <div class="gauge-legend">
+          <span><i class="dot dot--under"></i>Underweight</span>
+          <span><i class="dot dot--normal"></i>Normal</span>
+          <span><i class="dot dot--over"></i>Overweight</span>
+          <span><i class="dot dot--obese"></i>Obese</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: AI insight + history + trend -->
+    <section class="panel panel--detail">
+
+      <div class="insight-card" id="insight-card">
+        <div class="insight-card__eyebrow">Note for today</div>
+        <p class="insight-card__body" id="insight-text">
+          Calculate your BMI to see a personalized note here.
+        </p>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-card__header">
+          <h2>Trend</h2>
+          <span id="trend-count" class="trend-count"></span>
+        </div>
+        <canvas id="trend-chart" height="140"></canvas>
+        <p class="empty-note" id="trend-empty">No history yet — your logged entries will chart here.</p>
+      </div>
+
+      <div class="history-card">
+        <h2>History</h2>
+        <table class="history-table">
+          <thead>
+            <tr><th>Date</th><th>Weight</th><th>Height</th><th>BMI</th><th>Category</th></tr>
+          </thead>
+          <tbody id="history-body">
+            <tr><td colspan="5" class="empty-note">No entries logged yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    Built for the Oasis Infobyte Python Programming internship — BMI Health Tracker
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
