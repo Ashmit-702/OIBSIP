@@ -44,12 +44,51 @@ def classify_bmi(bmi: float) -> str:
         return "Obese"
 
 
-def get_ai_insights(username: str, bmi: float, category: str, history: list) -> dict:
+def calculate_ideal_weight_range(height_m: float) -> dict:
+    """Weight range (kg) corresponding to a 'Normal' BMI of 18.5-24.9 at this height."""
+    return {
+        "min": round(18.5 * (height_m ** 2), 1),
+        "max": round(24.9 * (height_m ** 2), 1)
+    }
+
+
+def calculate_bmr(weight_kg: float, height_m: float, age: int, gender: str) -> float:
+    """
+    Mifflin-St Jeor equation - the most widely used, clinically validated BMR formula.
+    gender expected as 'male' or 'female'.
+    """
+    height_cm = height_m * 100
+    base = (10 * weight_kg) + (6.25 * height_cm) - (5 * age)
+    if gender == "male":
+        return round(base + 5, 0)
+    else:
+        return round(base - 161, 0)
+
+
+ACTIVITY_MULTIPLIERS = {
+    "sedentary": 1.2,
+    "light": 1.375,
+    "moderate": 1.55,
+    "active": 1.725,
+    "very_active": 1.9
+}
+
+
+def calculate_daily_calories(bmr: float, activity_level: str) -> float:
+    multiplier = ACTIVITY_MULTIPLIERS.get(activity_level, ACTIVITY_MULTIPLIERS["sedentary"])
+    return round(bmr * multiplier, 0)
+
+
+def get_ai_insights(username: str, bmi: float, category: str, history: list,
+                     extra_metrics: dict = None) -> dict:
     """
     Calls Gemini to generate a short, personalized, non-alarming health note.
     Returns a dict: {"available": bool, "message": str}
     Never raises — always degrades gracefully so the UI never breaks because
     of an API/network issue.
+
+    extra_metrics (optional): {"bmr": float, "daily_calories": float,
+                                "ideal_weight": {"min": float, "max": float}}
     """
     if not GEMINI_API_KEY:
         return {
@@ -66,10 +105,23 @@ def get_ai_insights(username: str, bmi: float, category: str, history: list) -> 
         trend_note = f"Over their {len(history)} logged entries, this user's BMI has {direction} " \
                      f"from {first_bmi} to {last_bmi}."
 
+    metrics_note = ""
+    if extra_metrics:
+        parts = []
+        if extra_metrics.get("bmr"):
+            parts.append(f"an estimated BMR of {extra_metrics['bmr']} kcal/day")
+        if extra_metrics.get("daily_calories"):
+            parts.append(f"an estimated maintenance intake of {extra_metrics['daily_calories']} kcal/day")
+        if extra_metrics.get("ideal_weight"):
+            iw = extra_metrics["ideal_weight"]
+            parts.append(f"a healthy weight range of {iw['min']}-{iw['max']} kg for their height")
+        if parts:
+            metrics_note = "They also have " + ", ".join(parts) + "."
+
     prompt = (
         f"You are a friendly, encouraging health assistant inside a BMI tracking app. "
         f"A user named {username} just logged a BMI of {bmi}, classified as '{category}'. "
-        f"{trend_note} "
+        f"{trend_note} {metrics_note} "
         f"Write a short (3-4 sentences), warm, non-judgemental note with one practical "
         f"suggestion (diet or activity) suited to this category. Do not give medical "
         f"diagnoses. Do not mention that you are an AI model."

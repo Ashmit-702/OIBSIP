@@ -12,7 +12,10 @@ Routes:
 from flask import Flask, request, jsonify, render_template
 
 import db
-from bmi_logic import calculate_bmi, classify_bmi, get_ai_insights, ValidationError
+from bmi_logic import (
+    calculate_bmi, classify_bmi, get_ai_insights, ValidationError,
+    calculate_ideal_weight_range, calculate_bmr, calculate_daily_calories
+)
 
 app = Flask(__name__)
 
@@ -36,6 +39,11 @@ def calculate():
     weight_raw = payload.get("weight")
     height_raw = payload.get("height")
 
+    # Optional fields for the richer health dashboard
+    age_raw = payload.get("age")
+    gender = payload.get("gender")  # "male" or "female", optional
+    activity_level = payload.get("activity_level") or "sedentary"
+
     if not username:
         return jsonify({"error": "Please enter a name to save your record under."}), 400
 
@@ -51,26 +59,52 @@ def calculate():
         return jsonify({"error": str(e)}), 400
 
     category = classify_bmi(bmi)
+    ideal_weight = calculate_ideal_weight_range(height_m)
+
+    # BMR / calories are only computed if the user opted to provide age + gender
+    bmr = None
+    daily_calories = None
+    age = None
+    if age_raw and gender in ("male", "female"):
+        try:
+            age = int(age_raw)
+            if age <= 0 or age > 120:
+                raise ValueError
+            bmr = calculate_bmr(weight_kg, height_m, age, gender)
+            daily_calories = calculate_daily_calories(bmr, activity_level)
+        except (TypeError, ValueError):
+            return jsonify({"error": "Age must be a whole number between 1 and 120."}), 400
 
     try:
-        db.add_record(username, weight_kg, height_m, bmi, category)
+        db.add_record(
+            username, weight_kg, height_m, bmi, category,
+            age=age, gender=gender, activity_level=activity_level,
+            bmr=bmr, daily_calories=daily_calories,
+            ideal_weight_min=ideal_weight["min"], ideal_weight_max=ideal_weight["max"]
+        )
         history = db.get_records(username)
     except db.DatabaseError as e:
-        # Calculation still succeeded even if saving failed — tell the user honestly.
         return jsonify({
             "bmi": bmi,
             "category": category,
+            "ideal_weight": ideal_weight,
+            "bmr": bmr,
+            "daily_calories": daily_calories,
             "saved": False,
             "warning": f"Result calculated, but could not be saved: {e}",
             "history": [],
             "ai_insight": {"available": False, "message": "Unavailable because the record wasn't saved."}
         }), 200
 
-    ai_insight = get_ai_insights(username, bmi, category, history)
+    extra_metrics = {"bmr": bmr, "daily_calories": daily_calories, "ideal_weight": ideal_weight}
+    ai_insight = get_ai_insights(username, bmi, category, history, extra_metrics)
 
     return jsonify({
         "bmi": bmi,
         "category": category,
+        "ideal_weight": ideal_weight,
+        "bmr": bmr,
+        "daily_calories": daily_calories,
         "saved": True,
         "history": history,
         "ai_insight": ai_insight

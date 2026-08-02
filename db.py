@@ -63,6 +63,13 @@ def init_db():
             height_m REAL NOT NULL,
             bmi REAL NOT NULL,
             category TEXT NOT NULL,
+            age INTEGER,
+            gender TEXT,
+            activity_level TEXT,
+            bmr REAL,
+            daily_calories REAL,
+            ideal_weight_min REAL,
+            ideal_weight_max REAL,
             created_at TIMESTAMP NOT NULL
         )
     """
@@ -74,6 +81,13 @@ def init_db():
             height_m REAL NOT NULL,
             bmi REAL NOT NULL,
             category TEXT NOT NULL,
+            age INTEGER,
+            gender TEXT,
+            activity_level TEXT,
+            bmr REAL,
+            daily_calories REAL,
+            ideal_weight_min REAL,
+            ideal_weight_max REAL,
             created_at TEXT NOT NULL
         )
     """
@@ -86,25 +100,30 @@ def init_db():
         raise DatabaseError(f"Failed to initialise schema: {e}")
 
 
-def add_record(username: str, weight_kg: float, height_m: float, bmi: float, category: str):
+def add_record(username: str, weight_kg: float, height_m: float, bmi: float, category: str,
+                age=None, gender=None, activity_level=None, bmr=None,
+                daily_calories=None, ideal_weight_min=None, ideal_weight_max=None):
     try:
         with get_connection() as conn:
             cur = conn.cursor()
             now = datetime.utcnow()
+            values = (username, weight_kg, height_m, bmi, category, age, gender,
+                      activity_level, bmr, daily_calories, ideal_weight_min, ideal_weight_max)
             if USE_POSTGRES:
                 cur.execute(
                     """INSERT INTO bmi_records
-                       (username, weight_kg, height_m, bmi, category, created_at)
-                       VALUES (%s, %s, %s, %s, %s, %s)""",
-                    (username, weight_kg, height_m, bmi, category, now)
+                       (username, weight_kg, height_m, bmi, category, age, gender,
+                        activity_level, bmr, daily_calories, ideal_weight_min, ideal_weight_max, created_at)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    values + (now,)
                 )
             else:
                 cur.execute(
                     """INSERT INTO bmi_records
-                       (username, weight_kg, height_m, bmi, category, created_at)
-                       VALUES (?, ?, ?, ?, ?, ?)""",
-                    (username, weight_kg, height_m, bmi, category,
-                     now.strftime("%Y-%m-%d %H:%M:%S"))
+                       (username, weight_kg, height_m, bmi, category, age, gender,
+                        activity_level, bmr, daily_calories, ideal_weight_min, ideal_weight_max, created_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    values + (now.strftime("%Y-%m-%d %H:%M:%S"),)
                 )
             conn.commit()
     except Exception as e:
