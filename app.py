@@ -14,7 +14,8 @@ from flask import Flask, request, jsonify, render_template
 import db
 from bmi_logic import (
     calculate_bmi, classify_bmi, get_ai_insights, ValidationError,
-    calculate_ideal_weight_range, calculate_bmr, calculate_daily_calories
+    calculate_ideal_weight_range, calculate_bmr, calculate_daily_calories,
+    estimate_body_fat_percent, estimate_water_intake_liters, get_category_info
 )
 
 app = Flask(__name__)
@@ -60,10 +61,13 @@ def calculate():
 
     category = classify_bmi(bmi)
     ideal_weight = calculate_ideal_weight_range(height_m)
+    water_intake = estimate_water_intake_liters(weight_kg)
+    category_info = get_category_info(category)
 
-    # BMR / calories are only computed if the user opted to provide age + gender
+    # BMR / calories / body fat are only computed if the user opted to provide age + gender
     bmr = None
     daily_calories = None
+    body_fat = None
     age = None
     if age_raw and gender in ("male", "female"):
         try:
@@ -72,6 +76,7 @@ def calculate():
                 raise ValueError
             bmr = calculate_bmr(weight_kg, height_m, age, gender)
             daily_calories = calculate_daily_calories(bmr, activity_level)
+            body_fat = estimate_body_fat_percent(bmi, age, gender)
         except (TypeError, ValueError):
             return jsonify({"error": "Age must be a whole number between 1 and 120."}), 400
 
@@ -87,9 +92,12 @@ def calculate():
         return jsonify({
             "bmi": bmi,
             "category": category,
+            "category_info": category_info,
             "ideal_weight": ideal_weight,
             "bmr": bmr,
             "daily_calories": daily_calories,
+            "body_fat": body_fat,
+            "water_intake": water_intake,
             "saved": False,
             "warning": f"Result calculated, but could not be saved: {e}",
             "history": [],
@@ -102,9 +110,12 @@ def calculate():
     return jsonify({
         "bmi": bmi,
         "category": category,
+        "category_info": category_info,
         "ideal_weight": ideal_weight,
         "bmr": bmr,
         "daily_calories": daily_calories,
+        "body_fat": body_fat,
+        "water_intake": water_intake,
         "saved": True,
         "history": history,
         "ai_insight": ai_insight
@@ -116,6 +127,15 @@ def history(username):
     try:
         records = db.get_records(username)
         return jsonify({"history": records}), 200
+    except db.DatabaseError as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/history/<username>", methods=["DELETE"])
+def delete_history(username):
+    try:
+        db.delete_records(username)
+        return jsonify({"deleted": True}), 200
     except db.DatabaseError as e:
         return jsonify({"error": str(e)}), 500
 

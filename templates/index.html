@@ -27,6 +27,8 @@
 
     <!-- LEFT: Input + Gauge -->
     <section class="panel panel--reading">
+      <p class="greeting" id="greeting" style="display:none;"></p>
+
       <form id="bmi-form" class="reading-form">
 
         <div class="unit-toggle" role="group" aria-label="Unit system">
@@ -36,7 +38,8 @@
 
         <label class="field">
           <span>Your name</span>
-          <input type="text" id="username" name="username" placeholder="e.g. Ashmit" required autocomplete="name">
+          <input type="text" id="username" name="username" placeholder="e.g. Ashmit" required autocomplete="name" list="known-users">
+          <datalist id="known-users"></datalist>
         </label>
 
         <div class="field-row" id="metric-fields">
@@ -146,6 +149,19 @@
           <span class="stat-card__label">Daily calories</span>
           <span class="stat-card__value" id="stat-calories">—</span>
         </div>
+        <div class="stat-card">
+          <span class="stat-card__label">Body fat estimate</span>
+          <span class="stat-card__value" id="stat-bodyfat">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__label">Water intake</span>
+          <span class="stat-card__value" id="stat-water">—</span>
+        </div>
+      </div>
+
+      <div class="category-card" id="category-card" style="display:none;">
+        <span class="category-card__emoji" id="category-emoji"></span>
+        <p class="category-card__text" id="category-blurb"></p>
       </div>
 
       <div class="insight-card" id="insight-card">
@@ -153,20 +169,29 @@
         <p class="insight-card__body" id="insight-text">
           Calculate your BMI to see a personalized note here.
         </p>
-        <button class="copy-btn" id="copy-btn" style="display:none;">Copy summary</button>
+        <div class="insight-card__actions">
+          <button class="copy-btn" id="copy-btn" style="display:none;">Copy summary</button>
+          <button class="copy-btn" id="share-btn" style="display:none;">Share</button>
+        </div>
       </div>
 
       <div class="trend-card">
         <div class="trend-card__header">
           <h2>Trend</h2>
-          <span id="trend-count" class="trend-count"></span>
+          <div class="trend-card__actions">
+            <span id="trend-count" class="trend-count"></span>
+            <button class="print-btn" id="print-btn" title="Print or save as PDF">Export report</button>
+          </div>
         </div>
         <canvas id="trend-chart" height="140"></canvas>
         <p class="empty-note" id="trend-empty">No history yet — your logged entries will chart here.</p>
       </div>
 
       <div class="history-card">
-        <h2>History</h2>
+        <div class="history-card__header">
+          <h2>History</h2>
+          <button class="clear-btn" id="clear-btn" style="display:none;">Clear my history</button>
+        </div>
         <table class="history-table">
           <thead>
             <tr><th>Date</th><th>Weight</th><th>Height</th><th>BMI</th><th>Category</th></tr>

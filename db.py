@@ -21,7 +21,16 @@ import sqlite3
 from datetime import datetime
 from contextlib import contextmanager
 
-SQLITE_PATH = os.path.join(os.path.dirname(__file__), "bmi_records.db")
+# Vercel's project directory is READ-ONLY at runtime — only /tmp is writable.
+# Vercel automatically sets the VERCEL env var, so we detect it and redirect
+# the SQLite file there. This fixes "unable to open database file" errors.
+# Note: /tmp is still ephemeral between cold starts — for real persistence in
+# production, set DATABASE_URL to a free Postgres instance (see .env.example).
+if os.environ.get("VERCEL"):
+    SQLITE_PATH = "/tmp/bmi_records.db"
+else:
+    SQLITE_PATH = os.path.join(os.path.dirname(__file__), "bmi_records.db")
+
 DATABASE_URL = os.environ.get("DATABASE_URL")  # set this on Vercel for real persistence
 
 USE_POSTGRES = bool(DATABASE_URL)
@@ -162,3 +171,15 @@ def get_all_usernames():
             return [row[0] for row in cur.fetchall()]
     except Exception as e:
         raise DatabaseError(f"Failed to fetch users: {e}")
+
+
+def delete_records(username: str):
+    """Delete all records for a user. Used by the 'Clear my history' action."""
+    try:
+        with get_connection() as conn:
+            cur = conn.cursor()
+            placeholder = "%s" if USE_POSTGRES else "?"
+            cur.execute(f"DELETE FROM bmi_records WHERE username = {placeholder}", (username,))
+            conn.commit()
+    except Exception as e:
+        raise DatabaseError(f"Failed to delete records: {e}")

@@ -79,6 +79,52 @@ def calculate_daily_calories(bmr: float, activity_level: str) -> float:
     return round(bmr * multiplier, 0)
 
 
+def estimate_body_fat_percent(bmi: float, age: int, gender: str) -> float:
+    """
+    Deurenberg formula — a widely cited estimate of body fat % from BMI, age, and gender.
+    This is an estimate for general wellness tracking, not a clinical measurement
+    (which would require calipers, DEXA, or bioelectrical impedance).
+    """
+    gender_factor = 1 if gender == "male" else 0
+    body_fat = (1.20 * bmi) + (0.23 * age) - (10.8 * gender_factor) - 5.4
+    return round(max(body_fat, 0), 1)
+
+
+def estimate_water_intake_liters(weight_kg: float) -> float:
+    """A common general hydration heuristic: ~33ml per kg of body weight per day."""
+    return round(weight_kg * 0.033, 1)
+
+
+CATEGORY_INFO = {
+    "Underweight": {
+        "emoji": "🌱",
+        "blurb": "Your BMI suggests you're below the typical healthy range. This can sometimes "
+                 "mean your body isn't getting quite enough fuel. Consider nutrient-dense meals "
+                 "and speaking with a doctor if this is a new or unexplained change."
+    },
+    "Normal": {
+        "emoji": "✅",
+        "blurb": "Your BMI falls within the range generally associated with lower health risk. "
+                 "Keep doing what's working — consistent movement and balanced meals."
+    },
+    "Overweight": {
+        "emoji": "⚖️",
+        "blurb": "Your BMI is a little above the typical range. Small, sustainable changes — "
+                 "a daily walk, more vegetables, better sleep — tend to matter more than drastic ones."
+    },
+    "Obese": {
+        "emoji": "🩺",
+        "blurb": "Your BMI is significantly above the typical range, which is worth discussing with "
+                 "a healthcare provider for personalized guidance. BMI alone doesn't capture the "
+                 "full picture of health, but it's a useful starting point for a conversation."
+    }
+}
+
+
+def get_category_info(category: str) -> dict:
+    return CATEGORY_INFO.get(category, CATEGORY_INFO["Normal"])
+
+
 def get_ai_insights(username: str, bmi: float, category: str, history: list,
                      extra_metrics: dict = None) -> dict:
     """

@@ -235,6 +235,99 @@ input:focus {
   margin: 0;
 }
 
+.greeting {
+  font-size: 13px;
+  color: var(--vital);
+  font-weight: 600;
+  margin: 0 0 4px;
+  animation: fade-in 0.4s ease both;
+}
+
+/* ---------- Category card ---------- */
+.category-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  animation: fade-in 0.4s ease both;
+}
+
+.category-card__emoji {
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.category-card__text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.insight-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ---------- History header + clear/print buttons ---------- */
+.history-card__header,
+.trend-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.trend-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clear-btn, .print-btn {
+  background: none;
+  border: 1.5px solid var(--rule);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.clear-btn:hover { border-color: var(--zone-obese); color: var(--zone-obese); }
+.print-btn:hover { border-color: var(--vital); color: var(--vital); }
+
+/* ---------- Row hover life ---------- */
+.history-table tbody tr {
+  transition: background 0.15s ease;
+}
+.history-table tbody tr:hover {
+  background: var(--vital-soft);
+}
+
+.stat-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+/* ---------- Print styles ---------- */
+@media print {
+  .theme-toggle, .reading-form, .clear-btn, .print-btn,
+  .copy-btn, #share-btn, .footer, .greeting { display: none !important; }
+  .layout { grid-template-columns: 1fr !important; }
+  body { background: white; }
+}
+
 /* ---------- Gauge ---------- */
 .gauge-wrap {
   margin-top: 12px;
