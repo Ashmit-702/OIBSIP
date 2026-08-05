@@ -63,7 +63,7 @@ def get_connection():
 
 
 def init_db():
-    """Create the records table if it doesn't exist yet. Safe to call on every cold start."""
+    """Create tables if they don't exist yet. Safe to call on every cold start."""
     ddl_postgres = """
         CREATE TABLE IF NOT EXISTS bmi_records (
             id SERIAL PRIMARY KEY,
@@ -100,10 +100,25 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """
+    ddl_goals_postgres = """
+        CREATE TABLE IF NOT EXISTS user_goals (
+            username TEXT PRIMARY KEY,
+            goal_weight_kg REAL NOT NULL,
+            updated_at TIMESTAMP NOT NULL
+        )
+    """
+    ddl_goals_sqlite = """
+        CREATE TABLE IF NOT EXISTS user_goals (
+            username TEXT PRIMARY KEY,
+            goal_weight_kg REAL NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    """
     try:
         with get_connection() as conn:
             cur = conn.cursor()
             cur.execute(ddl_postgres if USE_POSTGRES else ddl_sqlite)
+            cur.execute(ddl_goals_postgres if USE_POSTGRES else ddl_goals_sqlite)
             conn.commit()
     except Exception as e:
         raise DatabaseError(f"Failed to initialise schema: {e}")
@@ -183,3 +198,64 @@ def delete_records(username: str):
             conn.commit()
     except Exception as e:
         raise DatabaseError(f"Failed to delete records: {e}")
+
+
+def set_goal(username: str, goal_weight_kg: float):
+    """Upsert a user's goal weight."""
+    try:
+        with get_connection() as conn:
+            cur = conn.cursor()
+            now = datetime.utcnow()
+            if USE_POSTGRES:
+                cur.execute(
+                    """INSERT INTO user_goals (username, goal_weight_kg, updated_at)
+                       VALUES (%s, %s, %s)
+                       ON CONFLICT (username) DO UPDATE
+                       SET goal_weight_kg = EXCLUDED.goal_weight_kg, updated_at = EXCLUDED.updated_at""",
+                    (username, goal_weight_kg, now)
+                )
+            else:
+                cur.execute(
+                    """INSERT INTO user_goals (username, goal_weight_kg, updated_at)
+                       VALUES (?, ?, ?)
+                       ON CONFLICT (username) DO UPDATE
+                       SET goal_weight_kg = excluded.goal_weight_kg, updated_at = excluded.updated_at""",
+                    (username, goal_weight_kg, now.strftime("%Y-%m-%d %H:%M:%S"))
+                )
+            conn.commit()
+    except Exception as e:
+        raise DatabaseError(f"Failed to save goal: {e}")
+
+
+def get_goal(username: str):
+    """Return the goal weight (kg) for a user, or None if no goal is set."""
+    try:
+        with get_connection() as conn:
+            cur = conn.cursor()
+            placeholder = "%s" if USE_POSTGRES else "?"
+            cur.execute(f"SELECT goal_weight_kg FROM user_goals WHERE username = {placeholder}", (username,))
+            row = cur.fetchone()
+            if row is None:
+                return None
+            return row[0]
+    except Exception as e:
+        raise DatabaseError(f"Failed to fetch goal: {e}")
+
+
+def get_community_stats():
+    """Aggregate, anonymous stats across ALL users — no individual data exposed."""
+    try:
+        with get_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*), COUNT(DISTINCT username), AVG(bmi) FROM bmi_records")
+            row = cur.fetchone()
+            total_entries = row[0] or 0
+            distinct_users = row[1] or 0
+            avg_bmi = round(row[2], 1) if row[2] is not None else None
+            return {
+                "total_entries": total_entries,
+                "distinct_users": distinct_users,
+                "average_bmi": avg_bmi
+            }
+    except Exception as e:
+        raise DatabaseError(f"Failed to fetch community stats: {e}")

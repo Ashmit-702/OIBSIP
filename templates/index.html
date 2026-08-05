@@ -23,6 +23,8 @@
     </button>
   </header>
 
+  <div class="community-strip" id="community-strip"></div>
+
   <main class="layout">
 
     <!-- LEFT: Input + Gauge -->
@@ -97,6 +99,13 @@
           </label>
         </div>
 
+        <div class="field-row" id="goal-fields" style="display:none;">
+          <label class="field">
+            <span>Goal weight (kg, optional)</span>
+            <input type="number" id="goal-weight" step="0.1" min="1" placeholder="e.g. 68">
+          </label>
+        </div>
+
         <button type="submit" class="btn-primary" id="calc-btn">
           <span>Calculate</span>
         </button>
@@ -129,6 +138,23 @@
           <span><i class="dot dot--normal"></i>Normal</span>
           <span><i class="dot dot--over"></i>Overweight</span>
           <span><i class="dot dot--obese"></i>Obese</span>
+        </div>
+
+        <div class="streak-row" id="streak-row" style="display:none;">
+          <span class="streak-badge" id="streak-badge"></span>
+        </div>
+
+        <div class="achievements-row" id="achievements-row"></div>
+
+        <div class="goal-progress" id="goal-progress-block" style="display:none;">
+          <div class="goal-progress__label">
+            <span>Goal progress</span>
+            <span id="goal-progress-percent"></span>
+          </div>
+          <div class="goal-progress__track">
+            <div class="goal-progress__fill" id="goal-progress-fill"></div>
+          </div>
+          <div class="goal-progress__caption" id="goal-progress-caption"></div>
         </div>
       </div>
     </section>
@@ -180,11 +206,20 @@
           <h2>Trend</h2>
           <div class="trend-card__actions">
             <span id="trend-count" class="trend-count"></span>
-            <button class="print-btn" id="print-btn" title="Print or save as PDF">Export report</button>
           </div>
+        </div>
+        <div class="metric-toggle" id="metric-toggle">
+          <button type="button" class="metric-btn is-active" data-metric="bmi">BMI</button>
+          <button type="button" class="metric-btn" data-metric="weight_kg">Weight</button>
+          <button type="button" class="metric-btn" data-metric="daily_calories">Calories</button>
         </div>
         <canvas id="trend-chart" height="140"></canvas>
         <p class="empty-note" id="trend-empty">No history yet — your logged entries will chart here.</p>
+
+        <div class="export-row">
+          <button class="export-btn" id="download-pdf-btn" style="display:none;">Download PDF report</button>
+          <button class="export-btn" id="download-csv-btn" style="display:none;">Export CSV</button>
+        </div>
       </div>
 
       <div class="history-card">
@@ -209,6 +244,18 @@
   <footer class="footer">
     Built for the Oasis Infobyte Python Programming internship — BMI Health Tracker
   </footer>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<div class="modal-overlay" id="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <p class="modal-box__text" id="modal-text"></p>
+    <div class="modal-box__actions">
+      <button class="modal-btn modal-btn--ghost" id="modal-cancel">Cancel</button>
+      <button class="modal-btn modal-btn--danger" id="modal-confirm">Delete</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>

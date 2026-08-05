@@ -9,14 +9,16 @@ Routes:
   GET  /api/users            -> list all usernames who have saved records
 """
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 
 import db
 from bmi_logic import (
     calculate_bmi, classify_bmi, get_ai_insights, ValidationError,
     calculate_ideal_weight_range, calculate_bmr, calculate_daily_calories,
-    estimate_body_fat_percent, estimate_water_intake_liters, get_category_info
+    estimate_body_fat_percent, estimate_water_intake_liters, get_category_info,
+    compute_streak, compute_achievements, compute_goal_progress
 )
+from report import generate_pdf_report, generate_csv_export
 
 app = Flask(__name__)
 
@@ -107,6 +109,17 @@ def calculate():
     extra_metrics = {"bmr": bmr, "daily_calories": daily_calories, "ideal_weight": ideal_weight}
     ai_insight = get_ai_insights(username, bmi, category, history, extra_metrics)
 
+    streak = compute_streak(history)
+    achievements = compute_achievements(history, streak)
+
+    goal_progress = None
+    try:
+        goal_weight = db.get_goal(username)
+        if goal_weight:
+            goal_progress = compute_goal_progress(history, goal_weight)
+    except db.DatabaseError:
+        pass  # goal lookup failing shouldn't break the core calculation response
+
     return jsonify({
         "bmi": bmi,
         "category": category,
@@ -118,7 +131,10 @@ def calculate():
         "water_intake": water_intake,
         "saved": True,
         "history": history,
-        "ai_insight": ai_insight
+        "ai_insight": ai_insight,
+        "streak": streak,
+        "achievements": achievements,
+        "goal_progress": goal_progress
     }), 200
 
 
@@ -144,6 +160,91 @@ def delete_history(username):
 def users():
     try:
         return jsonify({"users": db.get_all_usernames()}), 200
+    except db.DatabaseError as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/goal", methods=["POST"])
+def set_goal():
+    payload = request.get_json(silent=True) or {}
+    username = (payload.get("username") or "").strip()
+    goal_weight = payload.get("goal_weight")
+
+    if not username:
+        return jsonify({"error": "Username is required to set a goal."}), 400
+    try:
+        goal_weight = float(goal_weight)
+        if goal_weight <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({"error": "Goal weight must be a positive number."}), 400
+
+    try:
+        db.set_goal(username, goal_weight)
+        history = db.get_records(username)
+        progress = compute_goal_progress(history, goal_weight) if history else None
+        return jsonify({"goal_weight": goal_weight, "progress": progress}), 200
+    except db.DatabaseError as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/goal/<username>")
+def get_goal(username):
+    try:
+        goal_weight = db.get_goal(username)
+        if not goal_weight:
+            return jsonify({"goal_weight": None, "progress": None}), 200
+        history = db.get_records(username)
+        progress = compute_goal_progress(history, goal_weight) if history else None
+        return jsonify({"goal_weight": goal_weight, "progress": progress}), 200
+    except db.DatabaseError as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/community-stats")
+def community_stats():
+    try:
+        return jsonify(db.get_community_stats()), 200
+    except db.DatabaseError as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/report/<username>")
+def download_report(username):
+    try:
+        history = db.get_records(username)
+        if not history:
+            return jsonify({"error": "No records found for this user."}), 404
+
+        latest = history[-1]
+        goal_weight = db.get_goal(username)
+        goal = compute_goal_progress(history, goal_weight) if goal_weight else None
+
+        pdf_bytes = generate_pdf_report(username, latest, history, goal)
+        return Response(
+            pdf_bytes,
+            mimetype="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={username}_vitals_report.pdf"}
+        )
+    except db.DatabaseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Could not generate report: {e}"}), 500
+
+
+@app.route("/api/export/<username>")
+def export_csv(username):
+    try:
+        history = db.get_records(username)
+        if not history:
+            return jsonify({"error": "No records found for this user."}), 404
+
+        csv_data = generate_csv_export(history)
+        return Response(
+            csv_data,
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={username}_vitals_history.csv"}
+        )
     except db.DatabaseError as e:
         return jsonify({"error": str(e)}), 500
 

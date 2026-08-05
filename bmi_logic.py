@@ -10,6 +10,7 @@ missing/invalid key never breaks the core feature.
 
 import os
 import requests
+from datetime import datetime
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = "gemini-2.0-flash"
@@ -123,6 +124,88 @@ CATEGORY_INFO = {
 
 def get_category_info(category: str) -> dict:
     return CATEGORY_INFO.get(category, CATEGORY_INFO["Normal"])
+
+
+def compute_streak(history: list) -> int:
+    """
+    Longest run of consecutive calendar days logged, ending at the most recent entry.
+    history must be sorted oldest -> newest (as db.get_records returns it).
+    """
+    if not history:
+        return 0
+
+    dates = []
+    for record in history:
+        raw = record["created_at"]
+        d = datetime.strptime(raw.split(".")[0], "%Y-%m-%d %H:%M:%S").date() \
+            if isinstance(raw, str) else raw.date()
+        if d not in dates:
+            dates.append(d)
+
+    dates.sort()
+    streak = 1
+    best = 1
+    for i in range(1, len(dates)):
+        if (dates[i] - dates[i - 1]).days == 1:
+            streak += 1
+            best = max(best, streak)
+        elif (dates[i] - dates[i - 1]).days > 1:
+            streak = 1
+    return best
+
+
+ACHIEVEMENTS = [
+    {"id": "first_step", "emoji": "🎯", "label": "First Step",
+     "condition": lambda h, streak: len(h) >= 1},
+    {"id": "consistent", "emoji": "📈", "label": "Consistent Tracker",
+     "condition": lambda h, streak: len(h) >= 3},
+    {"id": "data_nerd", "emoji": "🔬", "label": "Data Nerd",
+     "condition": lambda h, streak: len(h) >= 10},
+    {"id": "week_streak", "emoji": "🔥", "label": "7-Day Streak",
+     "condition": lambda h, streak: streak >= 7},
+    {"id": "healthy_zone", "emoji": "✅", "label": "In the Healthy Zone",
+     "condition": lambda h, streak: h and h[-1]["category"] == "Normal"},
+]
+
+
+def compute_achievements(history: list, streak: int) -> list:
+    """Returns the list of achievement badges the user has unlocked so far."""
+    unlocked = []
+    for badge in ACHIEVEMENTS:
+        try:
+            if badge["condition"](history, streak):
+                unlocked.append({"id": badge["id"], "emoji": badge["emoji"], "label": badge["label"]})
+        except Exception:
+            continue
+    return unlocked
+
+
+def compute_goal_progress(history: list, goal_weight_kg: float) -> dict:
+    """
+    Progress toward a goal weight, based on the very first logged weight vs the
+    most recent one. Works whether the goal is to lose or gain weight.
+    Returns {"percent": 0-100, "start_weight": .., "current_weight": .., "goal_weight": ..}
+    """
+    if not history:
+        return None
+
+    start_weight = history[0]["weight_kg"]
+    current_weight = history[-1]["weight_kg"]
+    total_change_needed = goal_weight_kg - start_weight
+
+    if total_change_needed == 0:
+        percent = 100
+    else:
+        progress_made = current_weight - start_weight
+        percent = (progress_made / total_change_needed) * 100
+        percent = max(0, min(100, round(percent)))
+
+    return {
+        "percent": percent,
+        "start_weight": start_weight,
+        "current_weight": current_weight,
+        "goal_weight": goal_weight_kg
+    }
 
 
 def get_ai_insights(username: str, bmi: float, category: str, history: list,

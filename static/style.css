@@ -323,7 +323,8 @@ input:focus {
 /* ---------- Print styles ---------- */
 @media print {
   .theme-toggle, .reading-form, .clear-btn, .print-btn,
-  .copy-btn, #share-btn, .footer, .greeting { display: none !important; }
+  .copy-btn, #share-btn, .footer, .greeting, .community-strip,
+  .metric-toggle, .export-row, .toast-container, .modal-overlay { display: none !important; }
   .layout { grid-template-columns: 1fr !important; }
   body { background: white; }
 }
@@ -553,4 +554,229 @@ h2 {
   color: var(--ink-soft);
   font-size: 12px;
   margin-top: 48px;
+}
+
+/* ---------- Community strip ---------- */
+.community-strip {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  margin: -24px 0 32px;
+  min-height: 16px;
+}
+
+/* ---------- Streak & achievements ---------- */
+.streak-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.streak-badge {
+  background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+  color: #B9660A;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+.achievements-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.achievement-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--vital-soft);
+  color: var(--vital);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+  animation: fade-in 0.4s ease both;
+}
+
+/* ---------- Goal progress ---------- */
+.goal-progress {
+  margin-top: 18px;
+  animation: fade-in 0.4s ease both;
+}
+
+.goal-progress__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.goal-progress__track {
+  height: 8px;
+  background: var(--rule);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.goal-progress__fill {
+  height: 100%;
+  background: var(--vital);
+  border-radius: 999px;
+  width: 0%;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.goal-progress__caption {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+  font-family: var(--font-mono);
+}
+
+/* ---------- Chart metric toggle ---------- */
+.metric-toggle {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.metric-btn {
+  border: 1.5px solid var(--rule);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.metric-btn.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* ---------- Export buttons ---------- */
+.export-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  background: none;
+  border: 1.5px solid var(--rule);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.export-btn:hover { border-color: var(--vital); color: var(--vital); }
+
+/* ---------- Toasts ---------- */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.toast {
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 12px 18px;
+  border-radius: 9px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  animation: toast-in 0.3s ease both;
+  max-width: 320px;
+}
+
+.toast--error { background: var(--zone-obese); }
+.toast--success { background: var(--vital); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toast.toast--leaving {
+  animation: toast-out 0.25s ease forwards;
+}
+@keyframes toast-out {
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+/* ---------- Confirm modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 20, 27, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  animation: fade-in 0.15s ease both;
+}
+
+.modal-box {
+  background: var(--paper-raised);
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+
+.modal-box__text {
+  margin: 0 0 20px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.modal-box__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+}
+
+.modal-btn--ghost {
+  background: var(--paper);
+  color: var(--ink-soft);
+  border: 1.5px solid var(--rule);
+}
+
+.modal-btn--danger {
+  background: var(--zone-obese);
+  color: white;
 }
