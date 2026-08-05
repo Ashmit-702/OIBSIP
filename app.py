@@ -16,11 +16,22 @@ from bmi_logic import (
     calculate_bmi, classify_bmi, get_ai_insights, ValidationError,
     calculate_ideal_weight_range, calculate_bmr, calculate_daily_calories,
     estimate_body_fat_percent, estimate_water_intake_liters, get_category_info,
-    compute_streak, compute_achievements, compute_goal_progress
+    compute_streak, compute_achievements, compute_goal_progress, forecast_bmi_trend
 )
 from report import generate_pdf_report, generate_csv_export
 
 app = Flask(__name__)
+
+
+def db_error_response(e: db.DatabaseError, status: int = 500):
+    """
+    Log the full error server-side (useful for debugging on Vercel's logs)
+    but return only a generic, safe message to the client — raw DB errors
+    can contain connection strings/credentials and must never reach the UI.
+    """
+    print(f"[db error] {e}")
+    return jsonify({"error": "A storage error occurred. Please try again shortly."}), status
+
 
 # Initialise the database schema once when the app starts.
 try:
@@ -91,6 +102,9 @@ def calculate():
         )
         history = db.get_records(username)
     except db.DatabaseError as e:
+        # Log the full error server-side only — never echo raw DB/connection
+        # errors to the client, since they can contain connection strings.
+        print(f"[db error] {e}")
         return jsonify({
             "bmi": bmi,
             "category": category,
@@ -101,9 +115,11 @@ def calculate():
             "body_fat": body_fat,
             "water_intake": water_intake,
             "saved": False,
-            "warning": f"Result calculated, but could not be saved: {e}",
+            "warning": "Result calculated, but could not be saved to your history right now. "
+                       "Please try again shortly.",
             "history": [],
-            "ai_insight": {"available": False, "message": "Unavailable because the record wasn't saved."}
+            "ai_insight": {"available": False, "message": "Unavailable because the record wasn't saved."},
+            "forecast": {"available": False, "reason": "Record wasn't saved."}
         }), 200
 
     extra_metrics = {"bmr": bmr, "daily_calories": daily_calories, "ideal_weight": ideal_weight}
@@ -112,6 +128,7 @@ def calculate():
     streak = compute_streak(history)
     achievements = compute_achievements(history, streak)
 
+    goal_weight = None
     goal_progress = None
     try:
         goal_weight = db.get_goal(username)
@@ -119,6 +136,8 @@ def calculate():
             goal_progress = compute_goal_progress(history, goal_weight)
     except db.DatabaseError:
         pass  # goal lookup failing shouldn't break the core calculation response
+
+    forecast = forecast_bmi_trend(history, goal_weight_kg=goal_weight)
 
     return jsonify({
         "bmi": bmi,
@@ -134,7 +153,8 @@ def calculate():
         "ai_insight": ai_insight,
         "streak": streak,
         "achievements": achievements,
-        "goal_progress": goal_progress
+        "goal_progress": goal_progress,
+        "forecast": forecast
     }), 200
 
 
@@ -144,7 +164,7 @@ def history(username):
         records = db.get_records(username)
         return jsonify({"history": records}), 200
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
 
 
 @app.route("/api/history/<username>", methods=["DELETE"])
@@ -153,7 +173,7 @@ def delete_history(username):
         db.delete_records(username)
         return jsonify({"deleted": True}), 200
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
 
 
 @app.route("/api/users")
@@ -161,7 +181,7 @@ def users():
     try:
         return jsonify({"users": db.get_all_usernames()}), 200
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
 
 
 @app.route("/api/goal", methods=["POST"])
@@ -185,7 +205,7 @@ def set_goal():
         progress = compute_goal_progress(history, goal_weight) if history else None
         return jsonify({"goal_weight": goal_weight, "progress": progress}), 200
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
 
 
 @app.route("/api/goal/<username>")
@@ -198,7 +218,7 @@ def get_goal(username):
         progress = compute_goal_progress(history, goal_weight) if history else None
         return jsonify({"goal_weight": goal_weight, "progress": progress}), 200
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
 
 
 @app.route("/api/community-stats")
@@ -206,7 +226,7 @@ def community_stats():
     try:
         return jsonify(db.get_community_stats()), 200
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
 
 
 @app.route("/api/report/<username>")
@@ -227,7 +247,7 @@ def download_report(username):
             headers={"Content-Disposition": f"attachment; filename={username}_vitals_report.pdf"}
         )
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
     except Exception as e:
         return jsonify({"error": f"Could not generate report: {e}"}), 500
 
@@ -246,7 +266,7 @@ def export_csv(username):
             headers={"Content-Disposition": f"attachment; filename={username}_vitals_history.csv"}
         )
     except db.DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
+        return db_error_response(e)
 
 
 if __name__ == "__main__":

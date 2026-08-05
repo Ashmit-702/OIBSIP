@@ -80,6 +80,14 @@ const goalProgressFill = document.getElementById("goal-progress-fill");
 const goalProgressPercent = document.getElementById("goal-progress-percent");
 const goalProgressCaption = document.getElementById("goal-progress-caption");
 
+const insightSourceBadge = document.getElementById("insight-source-badge");
+const forecastCard = document.getElementById("forecast-card");
+const forecastConfidence = document.getElementById("forecast-confidence");
+const forecastHeadline = document.getElementById("forecast-headline");
+const forecastProjected = document.getElementById("forecast-projected");
+const forecastEtaBlock = document.getElementById("forecast-eta-block");
+const forecastEta = document.getElementById("forecast-eta");
+
 const historyBody = document.getElementById("history-body");
 const trendCount = document.getElementById("trend-count");
 const trendEmpty = document.getElementById("trend-empty");
@@ -332,9 +340,22 @@ function renderResult(data) {
 
   if (data.warning) {
     insightText.textContent = data.warning;
+    insightSourceBadge.style.display = "none";
   } else if (data.ai_insight) {
     insightText.textContent = data.ai_insight.message;
+    if (data.ai_insight.source === "ai") {
+      insightSourceBadge.textContent = "AI-generated";
+      insightSourceBadge.className = "source-badge source-badge--ai";
+      insightSourceBadge.style.display = "inline-block";
+    } else if (data.ai_insight.source === "local") {
+      insightSourceBadge.textContent = "Local intelligence";
+      insightSourceBadge.className = "source-badge source-badge--local";
+      insightSourceBadge.style.display = "inline-block";
+    } else {
+      insightSourceBadge.style.display = "none";
+    }
   }
+  renderForecast(data.forecast);
   copyBtn.style.display = "inline-block";
   if (navigator.share) shareBtn.style.display = "inline-block";
   clearBtn.style.display = "inline-block";
@@ -373,6 +394,44 @@ function renderResult(data) {
   }
 }
 
+/* ================= Predictive forecast (USP) ================= */
+function renderForecast(forecast) {
+  if (!forecast || !forecast.available) {
+    forecastCard.style.display = "none";
+    return;
+  }
+
+  forecastCard.style.display = "block";
+  forecastConfidence.textContent = forecast.confidence === "higher"
+    ? "High confidence"
+    : "Preliminary (log more entries)";
+
+  const directionWord = forecast.trend_direction === "rising" ? "rising"
+    : forecast.trend_direction === "falling" ? "falling" : "holding steady";
+  const weeklyChange = Math.abs(forecast.bmi_change_per_week).toFixed(2);
+
+  if (forecast.trend_direction === "stable") {
+    forecastHeadline.textContent = "Your BMI has been holding steady across your logged entries.";
+  } else {
+    forecastHeadline.textContent = "Your BMI is " + directionWord + " by about " + weeklyChange +
+      " points/week based on your own history.";
+  }
+
+  forecastProjected.textContent = forecast.projected_bmi.toFixed(1) + " in " + forecast.projected_days + "d";
+
+  if (forecast.goal_eta_days !== undefined) {
+    if (forecast.goal_eta_days === null) {
+      forecastEtaBlock.style.display = "flex";
+      forecastEta.textContent = "Trend moving away from goal";
+    } else {
+      forecastEtaBlock.style.display = "flex";
+      forecastEta.textContent = "~" + forecast.goal_eta_days + " days";
+    }
+  } else {
+    forecastEtaBlock.style.display = "none";
+  }
+}
+
 /* ================= Copy / Share summary ================= */
 function buildSummary() {
   if (!lastResult) return "";
@@ -385,6 +444,10 @@ function buildSummary() {
   if (lastResult.body_fat) lines.push("Estimated body fat: " + lastResult.body_fat + "%");
   if (lastResult.water_intake) lines.push("Recommended water intake: " + lastResult.water_intake + " L/day");
   if (lastResult.streak) lines.push("Current streak: " + lastResult.streak + " day(s)");
+  if (lastResult.forecast && lastResult.forecast.available) {
+    lines.push("Forecasted BMI in " + lastResult.forecast.projected_days + " days: " +
+      lastResult.forecast.projected_bmi.toFixed(1) + " (" + lastResult.forecast.trend_direction + " trend)");
+  }
   if (lastResult.ai_insight && lastResult.ai_insight.available) {
     lines.push("");
     lines.push("Note: " + lastResult.ai_insight.message);
