@@ -16,7 +16,7 @@
   <div class="hero__inner">
     <div class="hero__badge">
       <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z"/></svg>
-      Hybrid AI &middot; Predictive Analytics &middot; Vercel-deployed
+      AI-Powered Health Intelligence
     </div>
     <h1 class="hero__title">Vitals<span class="hero__plus">+</span></h1>
     <p class="hero__subtitle">
@@ -33,8 +33,8 @@
       <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z"/></svg>
     </div>
     <div class="masthead__text">
-      <h2>Your Health Dashboard</h2>
-      <p>Track BMI, body composition &amp; calorie needs — with AI-backed insights and trend forecasting.</p>
+      <h2>Your Dashboard</h2>
+      <p>Log a reading below to see your full health picture.</p>
     </div>
     <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
       <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.94-9.11c-.44-.06-.9-.1-1.36-.1"/></svg>
@@ -218,15 +218,9 @@
         </div>
       </div>
 
-      <div class="category-card" id="category-card" style="display:none;">
-        <span class="category-card__emoji" id="category-emoji"></span>
-        <p class="category-card__text" id="category-blurb"></p>
-      </div>
-
       <div class="insight-card" id="insight-card">
         <div class="insight-card__header">
-          <div class="insight-card__eyebrow">Note for today</div>
-          <span class="source-badge" id="insight-source-badge" style="display:none;"></span>
+          <div class="insight-card__eyebrow">Personalized Insight</div>
         </div>
         <p class="insight-card__body" id="insight-text">
           Calculate your BMI to see a personalized note here.
@@ -237,16 +231,18 @@
         </div>
       </div>
 
-      <div class="forecast-card" id="forecast-card" style="display:none;">
+      <div class="forecast-card forecast-card--locked" id="forecast-card">
         <div class="forecast-card__header">
           <div class="forecast-card__eyebrow">
             <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M3 17l6-6 4 4 8-8v3h-4.17L21 6v6l-8-8-4 4-6 6z"/></svg>
             Predictive Forecast
           </div>
-          <span class="forecast-card__confidence" id="forecast-confidence"></span>
+          <span class="forecast-card__confidence" id="forecast-confidence">Locked</span>
         </div>
-        <p class="forecast-card__headline" id="forecast-headline">—</p>
-        <div class="forecast-card__grid">
+        <p class="forecast-card__headline" id="forecast-headline">
+          Log one more entry on a different day to unlock your personalized BMI trend forecast.
+        </p>
+        <div class="forecast-card__grid" id="forecast-grid" style="display:none;">
           <div class="forecast-stat">
             <span class="forecast-stat__label">30-day projected BMI</span>
             <span class="forecast-stat__value" id="forecast-projected">—</span>
@@ -256,9 +252,9 @@
             <span class="forecast-stat__value" id="forecast-eta">—</span>
           </div>
         </div>
-        <p class="forecast-card__caption">
-          Modelled with linear regression on your own logged entries — a preview of where
-          this trend leads if nothing changes, not a prediction of what will happen.
+        <p class="forecast-card__caption" id="forecast-caption">
+          Vitals+ models your trend with regression on your own logged history — a preview
+          of where things lead if nothing changes, not a prediction of what will happen.
         </p>
       </div>
 

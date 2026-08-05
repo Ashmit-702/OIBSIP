@@ -305,31 +305,6 @@ input:focus {
   animation: fade-in 0.4s ease both;
 }
 
-/* ---------- Category card ---------- */
-.category-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 20px;
-  animation: fade-in 0.4s ease both;
-}
-
-.category-card__emoji {
-  font-size: 22px;
-  line-height: 1.4;
-}
-
-.category-card__text {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--ink-soft);
-}
-
 .insight-card__actions {
   display: flex;
   gap: 8px;
@@ -556,9 +531,6 @@ input:focus {
 .copy-btn.copied { background: var(--vital); color: var(--paper-raised); }
 
 .insight-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: 6px;
 }
 
@@ -577,23 +549,6 @@ input:focus {
   color: var(--ink);
 }
 
-.source-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 3px 9px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-.source-badge--ai {
-  background: var(--clinical-soft);
-  color: var(--clinical);
-}
-.source-badge--local {
-  background: var(--vital-soft);
-  color: var(--vital);
-}
-
 /* ---------- Forecast card (USP) ---------- */
 .forecast-card {
   position: relative;
@@ -603,7 +558,12 @@ input:focus {
   padding: 18px 20px;
   margin-bottom: 20px;
   overflow: hidden;
-  animation: fade-in 0.4s ease both;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.forecast-card--locked {
+  background: var(--paper);
+  opacity: 0.82;
 }
 
 .forecast-card__header {

@@ -67,10 +67,6 @@ const clearBtn = document.getElementById("clear-btn");
 const downloadPdfBtn = document.getElementById("download-pdf-btn");
 const downloadCsvBtn = document.getElementById("download-csv-btn");
 
-const categoryCard = document.getElementById("category-card");
-const categoryEmoji = document.getElementById("category-emoji");
-const categoryBlurb = document.getElementById("category-blurb");
-
 const streakRow = document.getElementById("streak-row");
 const streakBadge = document.getElementById("streak-badge");
 const achievementsRow = document.getElementById("achievements-row");
@@ -80,13 +76,14 @@ const goalProgressFill = document.getElementById("goal-progress-fill");
 const goalProgressPercent = document.getElementById("goal-progress-percent");
 const goalProgressCaption = document.getElementById("goal-progress-caption");
 
-const insightSourceBadge = document.getElementById("insight-source-badge");
 const forecastCard = document.getElementById("forecast-card");
 const forecastConfidence = document.getElementById("forecast-confidence");
 const forecastHeadline = document.getElementById("forecast-headline");
+const forecastGrid = document.getElementById("forecast-grid");
 const forecastProjected = document.getElementById("forecast-projected");
 const forecastEtaBlock = document.getElementById("forecast-eta-block");
 const forecastEta = document.getElementById("forecast-eta");
+const forecastCaption = document.getElementById("forecast-caption");
 
 const historyBody = document.getElementById("history-body");
 const trendCount = document.getElementById("trend-count");
@@ -320,7 +317,6 @@ form.addEventListener("submit", function (e) {
 
 function renderResult(data) {
   animateNumber(bmiValueEl, data.bmi, 1);
-  bmiCategoryEl.textContent = data.category;
   const angle = bmiToAngle(data.bmi);
   needle.style.transform = "rotate(" + angle + "deg)";
 
@@ -333,27 +329,15 @@ function renderResult(data) {
   statWater.textContent = data.water_intake ? data.water_intake + " L/day" : "-";
 
   if (data.category_info) {
-    categoryEmoji.textContent = data.category_info.emoji;
-    categoryBlurb.textContent = data.category_info.blurb;
-    categoryCard.style.display = "flex";
+    bmiCategoryEl.textContent = data.category_info.emoji + "  " + data.category;
+  } else {
+    bmiCategoryEl.textContent = data.category;
   }
 
   if (data.warning) {
     insightText.textContent = data.warning;
-    insightSourceBadge.style.display = "none";
   } else if (data.ai_insight) {
     insightText.textContent = data.ai_insight.message;
-    if (data.ai_insight.source === "ai") {
-      insightSourceBadge.textContent = "AI-generated";
-      insightSourceBadge.className = "source-badge source-badge--ai";
-      insightSourceBadge.style.display = "inline-block";
-    } else if (data.ai_insight.source === "local") {
-      insightSourceBadge.textContent = "Local intelligence";
-      insightSourceBadge.className = "source-badge source-badge--local";
-      insightSourceBadge.style.display = "inline-block";
-    } else {
-      insightSourceBadge.style.display = "none";
-    }
   }
   renderForecast(data.forecast);
   copyBtn.style.display = "inline-block";
@@ -397,14 +381,20 @@ function renderResult(data) {
 /* ================= Predictive forecast (USP) ================= */
 function renderForecast(forecast) {
   if (!forecast || !forecast.available) {
-    forecastCard.style.display = "none";
+    forecastCard.classList.add("forecast-card--locked");
+    forecastConfidence.textContent = "Locked";
+    forecastHeadline.textContent = (forecast && forecast.reason) ||
+      "Log one more entry on a different day to unlock your personalized BMI trend forecast.";
+    forecastGrid.style.display = "none";
+    forecastCaption.textContent = "Once unlocked, Vitals+ models your trend with regression " +
+      "on your own logged history to project where things are headed.";
     return;
   }
 
-  forecastCard.style.display = "block";
+  forecastCard.classList.remove("forecast-card--locked");
   forecastConfidence.textContent = forecast.confidence === "higher"
     ? "High confidence"
-    : "Preliminary (log more entries)";
+    : "Preliminary";
 
   const directionWord = forecast.trend_direction === "rising" ? "rising"
     : forecast.trend_direction === "falling" ? "falling" : "holding steady";
@@ -417,6 +407,7 @@ function renderForecast(forecast) {
       " points/week based on your own history.";
   }
 
+  forecastGrid.style.display = "grid";
   forecastProjected.textContent = forecast.projected_bmi.toFixed(1) + " in " + forecast.projected_days + "d";
 
   if (forecast.goal_eta_days !== undefined) {
@@ -430,6 +421,9 @@ function renderForecast(forecast) {
   } else {
     forecastEtaBlock.style.display = "none";
   }
+
+  forecastCaption.textContent = "Modelled with linear regression on your own logged entries — " +
+    "a preview of where this trend leads if nothing changes, not a prediction of what will happen.";
 }
 
 /* ================= Copy / Share summary ================= */
