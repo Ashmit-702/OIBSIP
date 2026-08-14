@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitals+ — AI Health Intelligence Platform</title>
+<meta name="description" content="Vitals+ — a BMI health tracker with a hybrid AI insight engine and predictive trend forecasting.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230F6E63' d='M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero__inner">
+    <div class="hero__badge">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z"/></svg>
+      AI-Powered Health Intelligence
+    </div>
+    <h1 class="hero__title">Vitals<span class="hero__plus">+</span></h1>
+    <p class="hero__subtitle">
+      A clinical-grade BMI &amp; metabolic health dashboard — with an AI insight engine
+      that never goes down, and a forecasting model that shows where your health is headed.
+    </p>
+  </div>
+</div>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="masthead__mark">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z"/></svg>
+    </div>
+    <div class="masthead__text">
+      <h2>Your Dashboard</h2>
+      <p>Log a reading below to see your full health picture.</p>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.94-9.11c-.44-.06-.9-.1-1.36-.1"/></svg>
+    </button>
+  </header>
+
+  <div class="community-strip" id="community-strip"></div>
+
+  <main class="layout">
+
+    <!-- LEFT: Input + Gauge -->
+    <section class="panel panel--reading">
+      <p class="greeting" id="greeting" style="display:none;"></p>
+
+      <form id="bmi-form" class="reading-form">
+
+        <div class="unit-toggle" role="group" aria-label="Unit system">
+          <button type="button" class="unit-btn is-active" data-unit="metric">Metric (kg / m)</button>
+          <button type="button" class="unit-btn" data-unit="imperial">Imperial (lb / ft-in)</button>
+        </div>
+
+        <label class="field">
+          <span>Your name</span>
+          <input type="text" id="username" name="username" placeholder="e.g. Ashmit" required autocomplete="name" list="known-users">
+          <datalist id="known-users"></datalist>
+        </label>
+
+        <div class="field-row" id="metric-fields">
+          <label class="field">
+            <span>Weight (kg)</span>
+            <input type="number" id="weight" name="weight" step="0.1" min="1" placeholder="68" required>
+          </label>
+          <label class="field">
+            <span>Height (m)</span>
+            <input type="number" id="height" name="height" step="0.01" min="0.3" placeholder="1.75" required>
+          </label>
+        </div>
+
+        <div class="field-row" id="imperial-fields" style="display:none;">
+          <label class="field">
+            <span>Weight (lb)</span>
+            <input type="number" id="weight-lb" step="0.1" min="1" placeholder="150">
+          </label>
+          <label class="field">
+            <span>Height (ft)</span>
+            <input type="number" id="height-ft" step="1" min="1" placeholder="5">
+          </label>
+          <label class="field">
+            <span>Height (in)</span>
+            <input type="number" id="height-in" step="1" min="0" max="11" placeholder="9">
+          </label>
+        </div>
+
+        <button type="button" class="advanced-toggle" id="advanced-toggle">
+          + Add age &amp; activity for BMR and calorie estimates (optional)
+        </button>
+
+        <div class="field-row advanced-fields" id="advanced-fields" style="display:none;">
+          <label class="field">
+            <span>Age</span>
+            <input type="number" id="age" min="1" max="120" placeholder="22">
+          </label>
+          <label class="field">
+            <span>Gender</span>
+            <select id="gender">
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Activity level</span>
+            <select id="activity_level">
+              <option value="sedentary">Sedentary</option>
+              <option value="light">Light exercise</option>
+              <option value="moderate">Moderate exercise</option>
+              <option value="active">Active</option>
+              <option value="very_active">Very active</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field-row" id="goal-fields" style="display:none;">
+          <label class="field">
+            <span>Goal weight (kg, optional)</span>
+            <input type="number" id="goal-weight" step="0.1" min="1" placeholder="e.g. 68">
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary" id="calc-btn">
+          <span>Calculate</span>
+        </button>
+
+        <p class="form-error" id="form-error" role="alert"></p>
+      </form>
+
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 300 170" class="gauge" id="gauge-svg">
+          <!-- Background arc zones -->
+          <path d="M 20 150 A 130 130 0 0 1 62 41" class="zone zone--under"/>
+          <path d="M 62 41 A 130 130 0 0 1 150 20" class="zone zone--normal-a"/>
+          <path d="M 150 20 A 130 130 0 0 1 214 52" class="zone zone--normal-b"/>
+          <path d="M 214 52 A 130 130 0 0 1 260 118" class="zone zone--over"/>
+          <path d="M 260 118 A 130 130 0 0 1 280 150" class="zone zone--obese"/>
+
+          <g id="needle" style="transform-origin: 150px 150px; transform: rotate(-90deg);">
+            <line x1="150" y1="150" x2="150" y2="35" class="needle-line"/>
+            <circle cx="150" cy="150" r="7" class="needle-hub"/>
+          </g>
+        </svg>
+
+        <div class="gauge-readout">
+          <span class="gauge-readout__value" id="bmi-value">—</span>
+          <span class="gauge-readout__label" id="bmi-category">Enter your details</span>
+        </div>
+
+        <div class="gauge-legend">
+          <span><i class="dot dot--under"></i>Underweight</span>
+          <span><i class="dot dot--normal"></i>Normal</span>
+          <span><i class="dot dot--over"></i>Overweight</span>
+          <span><i class="dot dot--obese"></i>Obese</span>
+        </div>
+
+        <div class="streak-row" id="streak-row" style="display:none;">
+          <span class="streak-badge" id="streak-badge"></span>
+        </div>
+
+        <div class="achievements-row" id="achievements-row"></div>
+
+        <div class="goal-progress" id="goal-progress-block" style="display:none;">
+          <div class="goal-progress__label">
+            <span>Goal progress</span>
+            <span id="goal-progress-percent"></span>
+          </div>
+          <div class="goal-progress__track">
+            <div class="goal-progress__fill" id="goal-progress-fill"></div>
+          </div>
+          <div class="goal-progress__caption" id="goal-progress-caption"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: AI insight + history + trend -->
+    <section class="panel panel--detail">
+
+      <div class="stat-featured" id="stat-featured">
+        <span class="stat-featured__icon">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 4h16v2H4V4zm2 4h4l-1.5 7h-1L6 8zm8 0h4l-1.5 7h-1L14 8zM3 20a9 9 0 0 1 18 0H3z"/></svg>
+        </span>
+        <div class="stat-featured__text">
+          <span class="stat-card__label">Healthy weight range for your height</span>
+          <span class="stat-featured__value" id="stat-ideal-weight">—</span>
+        </div>
+      </div>
+
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card">
+          <span class="stat-card__icon stat-card__icon--pulse">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M3 12h4l2-7 4 14 2-7h6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="stat-card__label">BMR (resting)</span>
+          <span class="stat-card__value" id="stat-bmr">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__icon stat-card__icon--flame">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c1 1 2 2.5 2 4.5A6.5 6.5 0 0 1 5 13.5C5 8 12 6 12 2z"/></svg>
+          </span>
+          <span class="stat-card__label">Daily calories</span>
+          <span class="stat-card__value" id="stat-calories">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__icon stat-card__icon--body">
+            <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="5" r="2.5" fill="currentColor"/><path fill="currentColor" d="M12 9c-3 0-5 2-5 5v7h2v-6h1v6h4v-6h1v6h2v-7c0-3-2-5-5-5z"/></svg>
+          </span>
+          <span class="stat-card__label">Body fat estimate</span>
+          <span class="stat-card__value" id="stat-bodyfat">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__icon stat-card__icon--water">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2s7 8.2 7 13a7 7 0 0 1-14 0c0-4.8 7-13 7-13z"/></svg>
+          </span>
+          <span class="stat-card__label">Water intake</span>
+          <span class="stat-card__value" id="stat-water">—</span>
+        </div>
+      </div>
+
+      <div class="score-card" id="score-card">
+        <div class="score-card__ring-wrap">
+          <svg class="score-ring" viewBox="0 0 120 120">
+            <circle class="score-ring__track" cx="60" cy="60" r="52"></circle>
+            <circle class="score-ring__fill" id="score-ring-fill" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="score-ring__label">
+            <span class="score-ring__value" id="score-value">—</span>
+            <span class="score-ring__max">/100</span>
+          </div>
+        </div>
+        <div class="score-card__body">
+          <div class="score-card__eyebrow">Health Score</div>
+          <p class="score-card__caption">
+            A transparent score, not an AI guess — every point below is traceable.
+          </p>
+          <div class="score-breakdown" id="score-breakdown"></div>
+        </div>
+      </div>
+
+      <div class="insight-card" id="insight-card">
+        <div class="insight-card__header">
+          <div class="insight-card__eyebrow">Personalized Insight</div>
+        </div>
+        <p class="insight-card__body" id="insight-text">
+          Calculate your BMI to see a personalized note here.
+        </p>
+        <div class="insight-card__actions">
+          <button class="copy-btn" id="copy-btn" style="display:none;">Copy summary</button>
+          <button class="copy-btn" id="share-btn" style="display:none;">Share</button>
+        </div>
+      </div>
+
+      <div class="forecast-card forecast-card--locked" id="forecast-card">
+        <div class="forecast-card__header">
+          <div class="forecast-card__eyebrow">
+            <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M3 17l6-6 4 4 8-8v3h-4.17L21 6v6l-8-8-4 4-6 6z"/></svg>
+            Predictive Forecast
+          </div>
+          <span class="forecast-card__confidence" id="forecast-confidence">Locked</span>
+        </div>
+        <p class="forecast-card__headline" id="forecast-headline">
+          Log one more entry on a different day to unlock your personalized BMI trend forecast.
+        </p>
+        <div class="forecast-card__grid" id="forecast-grid" style="display:none;">
+          <div class="forecast-stat">
+            <span class="forecast-stat__label">30-day projected BMI</span>
+            <span class="forecast-stat__value" id="forecast-projected">—</span>
+          </div>
+          <div class="forecast-stat" id="forecast-eta-block" style="display:none;">
+            <span class="forecast-stat__label">Est. time to goal</span>
+            <span class="forecast-stat__value" id="forecast-eta">—</span>
+          </div>
+        </div>
+        <p class="forecast-card__caption" id="forecast-caption">
+          Vitals+ models your trend with regression on your own logged history — a preview
+          of where things lead if nothing changes, not a prediction of what will happen.
+        </p>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-card__header">
+          <h2>Trend</h2>
+          <div class="trend-card__actions">
+            <span id="trend-count" class="trend-count"></span>
+          </div>
+        </div>
+        <div class="metric-toggle" id="metric-toggle">
+          <button type="button" class="metric-btn is-active" data-metric="bmi">BMI</button>
+          <button type="button" class="metric-btn" data-metric="weight_kg">Weight</button>
+          <button type="button" class="metric-btn" data-metric="daily_calories">Calories</button>
+        </div>
+        <canvas id="trend-chart" height="140"></canvas>
+        <p class="empty-note" id="trend-empty">No history yet — your logged entries will chart here.</p>
+
+        <div class="export-row">
+          <button class="export-btn" id="download-pdf-btn" style="display:none;">Download PDF report</button>
+          <button class="export-btn" id="download-csv-btn" style="display:none;">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="history-card">
+        <div class="history-card__header">
+          <h2>History</h2>
+          <button class="clear-btn" id="clear-btn" style="display:none;">Clear my history</button>
+        </div>
+        <table class="history-table">
+          <thead>
+            <tr><th>Date</th><th>Weight</th><th>Height</th><th>BMI</th><th>Category</th></tr>
+          </thead>
+          <tbody id="history-body">
+            <tr><td colspan="5" class="empty-note">No entries logged yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer__brand">Vitals<span class="hero__plus">+</span></div>
+    <p class="footer__tagline">AI-powered BMI &amp; metabolic health tracking</p>
+  </footer>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<div class="modal-overlay" id="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <p class="modal-box__text" id="modal-text"></p>
+    <div class="modal-box__actions">
+      <button class="modal-btn modal-btn--ghost" id="modal-cancel">Cancel</button>
+      <button class="modal-btn modal-btn--danger" id="modal-confirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

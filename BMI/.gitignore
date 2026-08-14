@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+bmi_records.db
+.vercel
+venv/
+.DS_Store

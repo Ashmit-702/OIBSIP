@@ -1,0 +1,306 @@
+:root{
+  --sky-deep:#101E30;
+  --sky-mid:#182C46;
+  --sky-card:#1C3151;
+  --amber:#E8A34C;
+  --teal:#5FB3AA;
+  --cloud:#F4F7F8;
+  --slate:#8CA0B8;
+  --slate-dim:#5E7188;
+  --line: rgba(244,247,248,0.10);
+  --line-strong: rgba(244,247,248,0.20);
+  --danger:#E27D60;
+  --good:#5FB37A;
+  --radius: 4px;
+  --accent: var(--amber);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--sky-deep);
+  color:var(--cloud);
+  font-family:'IBM Plex Sans', sans-serif;
+  min-height:100vh;
+  padding:40px 20px 80px;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+.wrap{max-width:920px;margin:0 auto; position:relative; z-index:1;}
+
+/* ============================================================
+   SKY BACKGROUND — a fixed layer behind everything, swapped by
+   JS via [data-sky] to match live weather conditions. Each theme
+   only changes the gradient + which decorative elements are
+   present; layout never shifts.
+   ============================================================ */
+.sky-bg{
+  position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(232,163,76,0.08), transparent 60%),
+    radial-gradient(1000px 700px at 100% 0%, rgba(95,179,170,0.07), transparent 55%),
+    var(--sky-deep);
+  transition: background 1.4s ease;
+}
+.sky-bg[data-sky="clear_day"]{
+  background:
+    radial-gradient(900px 500px at 80% -5%, rgba(232,163,76,0.22), transparent 60%),
+    radial-gradient(1000px 700px at 0% 100%, rgba(95,179,170,0.06), transparent 55%),
+    linear-gradient(180deg, #16283F 0%, #101E30 55%);
+}
+.sky-bg[data-sky="clear_night"]{
+  background:
+    radial-gradient(900px 500px at 80% -5%, rgba(95,120,179,0.10), transparent 60%),
+    linear-gradient(180deg, #0B1526 0%, #0D1220 60%);
+}
+.sky-bg[data-sky="cloudy_day"]{
+  background: linear-gradient(180deg, #223650 0%, #16263B 60%);
+}
+.sky-bg[data-sky="cloudy_night"]{
+  background: linear-gradient(180deg, #131E30 0%, #0D1526 60%);
+}
+.sky-bg[data-sky="rain"], .sky-bg[data-sky="drizzle"]{
+  background: linear-gradient(180deg, #16222F 0%, #0F1A24 60%);
+}
+.sky-bg[data-sky="storm"]{
+  background: linear-gradient(180deg, #10141E 0%, #0A0D14 60%);
+}
+.sky-bg[data-sky="snow"]{
+  background: linear-gradient(180deg, #26374D 0%, #16283F 60%);
+}
+.sky-bg[data-sky="mist"]{
+  background: linear-gradient(180deg, #202E3F 0%, #16222F 60%);
+}
+
+.sky-el{position:absolute;}
+.sky-star{width:2px; height:2px; background:#F4F7F8; border-radius:50%; animation: twinkle 3.4s ease-in-out infinite;}
+.sky-cloud{
+  background: rgba(244,247,248,0.05); border-radius:50%; filter: blur(2px);
+  animation: drift linear infinite;
+}
+.sky-sun{
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(232,163,76,0.5) 0%, rgba(232,163,76,0) 70%);
+  animation: pulse-glow 6s ease-in-out infinite;
+}
+.sky-moon{
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(200,215,235,0.35) 0%, rgba(200,215,235,0) 70%);
+}
+.sky-drop{
+  width:1.5px; background: linear-gradient(180deg, transparent, rgba(95,179,170,0.35));
+  animation: fall linear infinite;
+}
+.sky-flake{
+  border-radius:50%; background: rgba(244,247,248,0.55);
+  animation: snowfall linear infinite;
+}
+.sky-fogband{
+  height:60px; width:140%; left:-20%;
+  background: linear-gradient(90deg, transparent, rgba(244,247,248,0.06), transparent);
+  animation: fogdrift linear infinite;
+}
+@keyframes twinkle{0%,100%{opacity:0.15;} 50%{opacity:0.9;}}
+@keyframes drift{from{transform:translateX(-10%);} to{transform:translateX(110vw);}}
+@keyframes pulse-glow{0%,100%{opacity:0.6;} 50%{opacity:1;}}
+@keyframes fall{from{transform:translateY(-10vh);} to{transform:translateY(110vh);}}
+@keyframes snowfall{
+  from{transform:translate(0,-10vh) rotate(0deg);}
+  to{transform:translate(20px,110vh) rotate(180deg);}
+}
+@keyframes fogdrift{from{transform:translateX(-5%);} to{transform:translateX(5%);}}
+
+/* ---------- Header ---------- */
+.masthead{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  margin-bottom:28px; flex-wrap:wrap; gap:16px;
+  border-bottom:1px solid var(--line); padding-bottom:18px;
+}
+.masthead-title{font-family:'Space Grotesk', sans-serif; font-size:22px; font-weight:600; letter-spacing:0.02em;}
+.masthead-title span{color:var(--amber);}
+.masthead-sub{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--slate-dim); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px;}
+.clock{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--slate); text-align:right; letter-spacing:0.03em;}
+
+/* ---------- Controls ---------- */
+.controls{display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;}
+.search-field{
+  flex:1; min-width:200px; display:flex; align-items:center;
+  background:var(--sky-mid); border:1px solid var(--line-strong); border-radius:var(--radius); padding:0 4px 0 14px;
+}
+.search-field input{flex:1; background:transparent; border:none; outline:none; color:var(--cloud); font-family:'IBM Plex Sans', sans-serif; font-size:14px; padding:12px 8px;}
+.search-field input::placeholder{color:var(--slate-dim);}
+.btn{
+  font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase;
+  background:var(--sky-mid); color:var(--cloud); border:1px solid var(--line-strong); border-radius:var(--radius);
+  padding:0 16px; cursor:pointer; transition:border-color .15s ease, color .15s ease;
+  display:flex; align-items:center; gap:6px; height:44px;
+}
+.btn:hover{border-color:var(--amber); color:var(--amber);}
+.btn:focus-visible, input:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+.btn.primary{background:var(--amber); color:#20140A; border-color:var(--amber); font-weight:600;}
+.btn.primary:hover{opacity:0.9; color:#20140A;}
+.unit-toggle{display:flex; border:1px solid var(--line-strong); border-radius:var(--radius); overflow:hidden; height:44px; font-family:'IBM Plex Mono', monospace; font-size:12px;}
+.unit-toggle button{background:var(--sky-mid); color:var(--slate); border:none; padding:0 14px; cursor:pointer; letter-spacing:0.04em;}
+.unit-toggle button.active{background:var(--amber); color:#20140A; font-weight:600;}
+
+/* ---------- Notices ---------- */
+.key-panel{background:var(--sky-mid); border:1px solid var(--line-strong); border-radius:var(--radius); padding:16px 18px; margin-bottom:24px; font-size:13px; color:var(--slate); line-height:1.6; display:none;}
+.key-panel.show{display:block;}
+.key-panel a{color:var(--amber);}
+.key-panel code{background:var(--sky-deep); padding:2px 6px; border-radius:3px; font-family:'IBM Plex Mono', monospace; font-size:12px;}
+
+.status{
+  font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--slate);
+  display:none; align-items:center; gap:10px;
+  background:var(--sky-mid); border:1px solid var(--line-strong); border-radius:var(--radius);
+  padding:12px 16px; margin-bottom:20px;
+}
+.status.show{display:flex;}
+.status.error{color:var(--danger); border-color:rgba(226,125,96,0.4); background:rgba(226,125,96,0.08);}
+.status-icon{width:14px; height:14px; flex-shrink:0; border-radius:50%; background:var(--slate-dim); position:relative;}
+.status.error .status-icon{background:var(--danger);}
+.status:not(.error) .status-icon{
+  background:transparent; border:2px solid var(--slate-dim); border-top-color:var(--amber);
+  animation: spin 0.8s linear infinite;
+}
+.status.done:not(.error) .status-icon{display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.card.loading .hero-temp, .card.loading .hero-desc, .card.loading .hero-feels,
+.card.loading .readout-value{
+  color:transparent; position:relative; border-radius:3px; overflow:hidden;
+  background:linear-gradient(90deg, var(--sky-mid) 25%, rgba(244,247,248,0.08) 50%, var(--sky-mid) 75%);
+  background-size:200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer{0%{background-position:200% 0;} 100%{background-position:-200% 0;}}
+
+/* ---------- Hero card ---------- */
+.card{
+  background:rgba(28,49,81,0.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border:1px solid var(--line); border-radius:8px; padding:28px 28px 8px; position:relative; overflow:hidden; display:none;
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,0.5);
+  animation: cardIn .5s ease;
+}
+@keyframes cardIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+.card.show{display:block;}
+.graph-bg{position:absolute; top:0; left:0; right:0; height:260px; opacity:0.45; pointer-events:none;}
+.hero{position:relative; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; padding-bottom:26px;}
+.hero-loc{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--slate); margin-bottom:6px;}
+.hero-city{font-family:'Space Grotesk', sans-serif; font-size:26px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.hero-localtime{font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:500; color:var(--slate); letter-spacing:0.03em;}
+.hero-temp{font-family:'Space Grotesk', sans-serif; font-size:76px; font-weight:700; line-height:1; display:flex; align-items:flex-start;}
+.hero-temp .unit{font-size:28px; margin-top:8px; color:var(--slate); font-weight:500;}
+.hero-desc{font-family:'IBM Plex Sans', sans-serif; font-size:15px; color:var(--slate); text-transform:capitalize; margin-top:6px;}
+.hero-icon{width:96px; height:96px; flex-shrink:0;}
+.hero-feels{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--slate-dim); margin-top:10px;}
+
+/* ---------- Readout grid ---------- */
+.readouts{position:relative; display:grid; grid-template-columns:repeat(4, 1fr); border-top:1px solid var(--line);}
+.readout{padding:16px 4px; border-right:1px solid var(--line); text-align:center;}
+.readout:last-child{border-right:none;}
+.readout-label{font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--slate-dim); margin-bottom:6px;}
+.readout-value{font-family:'IBM Plex Mono', monospace; font-size:16px; font-weight:600; color:var(--teal);}
+
+/* ---------- Sun arc + AQI subpanels ---------- */
+.subpanels{position:relative; display:grid; grid-template-columns:1.3fr 1fr; gap:0; border-top:1px solid var(--line);}
+.subpanel{padding:18px 20px; border-right:1px solid var(--line);}
+.subpanel:last-child{border-right:none;}
+.subpanel-label{font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--slate-dim); margin-bottom:10px;}
+.sun-arc{width:100%; height:auto; display:block;}
+.sun-times{display:flex; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--slate); margin-top:2px;}
+.aqi-row{display:flex; align-items:center; gap:14px; height:78px;}
+.aqi-badge{
+  font-family:'Space Grotesk', sans-serif; font-size:26px; font-weight:700;
+  width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--teal); color:var(--teal); flex-shrink:0;
+}
+.aqi-badge.moderate{border-color:var(--amber); color:var(--amber);}
+.aqi-badge.poor{border-color:var(--danger); color:var(--danger);}
+.aqi-detail{font-family:'IBM Plex Sans', sans-serif;}
+.aqi-detail #aqiCategory{font-size:15px; font-weight:600; margin-bottom:4px;}
+.aqi-fine{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--slate-dim);}
+
+/* ---------- Pinned cities ---------- */
+.pinned-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
+.pinned-row:empty{display:none; margin:0;}
+.pin-chip{
+  display:flex; align-items:center; gap:10px;
+  background:rgba(28,49,81,0.6); border:1px solid var(--line-strong); border-radius:20px;
+  padding:8px 14px 8px 10px; cursor:pointer; font-family:'IBM Plex Sans', sans-serif;
+  transition: border-color .15s ease;
+}
+.pin-chip:hover{border-color:var(--amber);}
+.pin-chip svg{width:18px; height:18px; flex-shrink:0;}
+.pin-chip-name{font-size:12px; color:var(--slate); white-space:nowrap;}
+.pin-chip-temp{font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:600; white-space:nowrap;}
+.pin-chip-remove{
+  background:none; border:none; color:var(--slate-dim); font-size:14px; line-height:1; cursor:pointer;
+  padding:0 0 0 2px; margin-left:2px;
+}
+.pin-chip-remove:hover{color:var(--danger);}
+
+.pin-btn{
+  background:none; border:none; color:var(--slate-dim); font-size:20px; cursor:pointer;
+  line-height:1; padding:0 0 0 2px; transition: color .15s ease, transform .1s ease;
+}
+.pin-btn:hover{color:var(--amber); transform:scale(1.1);}
+.pin-btn.pinned{color:var(--amber);}
+
+.hero-advisory{
+  font-family:'IBM Plex Sans', sans-serif; font-size:13px; color:var(--cloud);
+  margin-top:14px; padding:10px 14px; background:rgba(232,163,76,0.08);
+  border-left:2px solid var(--amber); border-radius:0 4px 4px 0; max-width:440px;
+}
+
+/* ---------- Hourly strip ---------- */
+.hourly{display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:8px;}
+.hourly::-webkit-scrollbar{height:4px;}
+.hourly::-webkit-scrollbar-thumb{background:var(--line-strong); border-radius:2px;}
+.hour-card{
+  flex:0 0 auto; width:76px; text-align:center;
+  background:rgba(28,49,81,0.6); border:1px solid var(--line); border-radius:6px; padding:12px 6px;
+}
+.hour-card-time{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--slate-dim); margin-bottom:6px;}
+.hour-card svg{width:26px; height:26px; margin:2px 0;}
+.hour-card-temp{font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:600; margin-top:4px;}
+.hour-card-pop{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--teal); margin-top:2px;}
+
+/* ---------- Forecast strip ---------- */
+.forecast-title{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--slate-dim); margin:32px 0 12px; display:none;}
+.forecast-title.show{display:block;}
+.forecast{display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; margin-bottom:8px;}
+.fcard{
+  background:rgba(28,49,81,0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border:1px solid var(--line); border-radius:6px; padding:16px 8px; text-align:center;
+  opacity:0; transform:translateY(8px); animation:fcardIn .5s ease forwards;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.fcard:hover{border-color:var(--line-strong); transform:translateY(-2px);}
+@keyframes fcardIn{to{opacity:1; transform:translateY(0);}}
+.fcard-day{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--slate); margin-bottom:10px;}
+.fcard svg{width:34px; height:34px; margin-bottom:8px;}
+.fcard-hi{font-family:'Space Grotesk', sans-serif; font-size:16px; font-weight:600;}
+.fcard-lo{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--slate-dim);}
+
+/* ---------- History ---------- */
+.history{display:flex; gap:8px; flex-wrap:wrap; margin-top:26px;}
+.history-title{width:100%; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--slate-dim); margin-bottom:2px;}
+.chip{font-family:'IBM Plex Mono', monospace; font-size:11px; background:transparent; color:var(--slate); border:1px solid var(--line-strong); border-radius:20px; padding:6px 12px; cursor:pointer;}
+.chip:hover{color:var(--amber); border-color:var(--amber);}
+
+footer{text-align:center; margin-top:60px; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--slate-dim); letter-spacing:0.05em;}
+footer a{color:var(--slate);}
+
+@media (max-width:600px){
+  .readouts{grid-template-columns:repeat(2,1fr);}
+  .readout:nth-child(2){border-right:none;}
+  .subpanels{grid-template-columns:1fr;}
+  .subpanel{border-right:none; border-bottom:1px solid var(--line);}
+  .subpanel:last-child{border-bottom:none;}
+  .forecast{grid-template-columns:repeat(2,1fr); gap:8px;}
+  .hero-temp{font-size:58px;}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important; transition:none !important;}
+}
