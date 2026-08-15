@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Reports — VITALS+{% endblock %}
+{% set active_page = 'reports' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Reports</h1>
+    <p class="page-header__subtitle">Generate a downloadable summary of your health data.</p>
+  </div>
+</div>
+
+<div class="report-panel">
+  <div class="report-panel__icon">
+    <svg viewBox="0 0 24 24" width="32" height="32"><path fill="currentColor" d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>
+  </div>
+  <h2>Generate Health Report</h2>
+  <p>Includes your baseline, current metrics, BMI, goal progress, weight trend chart, and recent wellness insights as a PDF.</p>
+  <div class="report-panel__actions">
+    <button class="btn-primary" id="generate-report-btn">Generate Health Report</button>
+    <button class="btn-secondary" id="export-csv-report-btn">Export Raw Data (CSV)</button>
+  </div>
+  <div id="report-status" class="report-panel__status"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

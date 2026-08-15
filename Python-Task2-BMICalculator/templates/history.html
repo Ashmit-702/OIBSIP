@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Health History — VITALS+{% endblock %}
+{% set active_page = 'history-table' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Health History</h1>
+    <p class="page-header__subtitle">Every entry you've logged, searchable and editable.</p>
+  </div>
+  <button class="btn-primary" id="export-csv-btn">Export CSV</button>
+</div>
+
+<div class="history-toolbar">
+  <input type="text" id="history-search" placeholder="Search by date (YYYY-MM-DD)…" class="history-toolbar__search">
+  <div class="filter-group" id="history-window-filter">
+    <button data-window="30D" class="filter-btn">30D</button>
+    <button data-window="90D" class="filter-btn">90D</button>
+    <button data-window="1Y" class="filter-btn">1Y</button>
+    <button data-window="All" class="filter-btn is-active">All</button>
+  </div>
+</div>
+
+<div id="history-root">
+  <div class="skeleton-card skeleton-card--tall"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

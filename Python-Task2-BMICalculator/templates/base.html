@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}VITALS+{% endblock %}</title>
+<meta name="description" content="VITALS+ — Personal Health & Fitness Analytics Platform. Wellness tracking, not medical diagnosis.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230F6E63' d='M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body class="app-body">
+
+<script>
+  (function () {
+    var saved = localStorage.getItem("vitals-theme");
+    if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+  })();
+</script>
+
+<div class="app-shell">
+
+  <nav class="sidebar" aria-label="Primary navigation">
+    <div class="sidebar__brand">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z"/></svg>
+      <span>VITALS<span class="brand-plus">+</span></span>
+    </div>
+
+    <div class="sidebar__links">
+      <a href="{{ url_for('pages.dashboard') }}" class="sidebar__link {{ 'is-active' if active_page == 'dashboard' else '' }}">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Overview
+      </a>
+      <a href="{{ url_for('pages.history') }}" class="sidebar__link {{ 'is-active' if active_page == 'history' else '' }}">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7V3zm0 5v5l4 2 .9-1.8-3.2-1.6V8H12z"/></svg>
+        Health
+      </a>
+      <a href="{{ url_for('pages.analytics') }}" class="sidebar__link {{ 'is-active' if active_page == 'analytics' else '' }}">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 20V10h3v10H4zm6.5 0V4h3v16h-3zM17 20v-7h3v7h-3z"/></svg>
+        Analytics
+      </a>
+      <a href="{{ url_for('pages.goals') }}" class="sidebar__link {{ 'is-active' if active_page == 'goals' else '' }}">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 16a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm0-9a3 3 0 1 0 3 3 3 3 0 0 0-3-3z"/></svg>
+        Goals
+      </a>
+      <a href="{{ url_for('pages.history') }}" class="sidebar__link {{ 'is-active' if active_page == 'history-table' else '' }}">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h16v2H4v-2z"/></svg>
+        History
+      </a>
+      <a href="{{ url_for('pages.reports') }}" class="sidebar__link {{ 'is-active' if active_page == 'reports' else '' }}">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>
+        Reports
+      </a>
+    </div>
+
+    <div class="sidebar__footer">
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.94-9.11c-.44-.06-.9-.1-1.36-.1"/></svg>
+        <span>Theme</span>
+      </button>
+      {% if username %}
+      <div class="sidebar__user">
+        <span class="sidebar__user-name">{{ username }}</span>
+        <a href="{{ url_for('pages.logout') }}" class="sidebar__logout">Switch profile</a>
+      </div>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="app-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <a href="{{ url_for('pages.dashboard') }}" class="mobile-nav__link {{ 'is-active' if active_page == 'dashboard' else '' }}">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="{{ url_for('pages.analytics') }}" class="mobile-nav__link {{ 'is-active' if active_page == 'analytics' else '' }}">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 20V10h3v10H4zm6.5 0V4h3v16h-3zM17 20v-7h3v7h-3z"/></svg>
+      <span>Analytics</span>
+    </a>
+    <a href="{{ url_for('pages.goals') }}" class="mobile-nav__link {{ 'is-active' if active_page == 'goals' else '' }}">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 16a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm0-9a3 3 0 1 0 3 3 3 3 0 0 0-3-3z"/></svg>
+      <span>Goals</span>
+    </a>
+    <a href="{{ url_for('pages.history') }}" class="mobile-nav__link {{ 'is-active' if active_page in ('history','history-table') else '' }}">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h16v2H4v-2z"/></svg>
+      <span>History</span>
+    </a>
+    <a href="{{ url_for('pages.reports') }}" class="mobile-nav__link {{ 'is-active' if active_page == 'reports' else '' }}">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5z"/></svg>
+      <span>Reports</span>
+    </a>
+  </nav>
+
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

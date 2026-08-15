@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Goals — VITALS+{% endblock %}
+{% set active_page = 'goals' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Goals</h1>
+    <p class="page-header__subtitle">Set a target and track your pace toward it.</p>
+  </div>
+  <button class="btn-primary" id="open-goal-form">Edit Goal</button>
+</div>
+
+<div id="goals-root">
+  <div class="skeleton-card skeleton-card--tall"></div>
+</div>
+
+<div class="modal-overlay" id="goal-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-box__header">
+      <h2>Set your goal</h2>
+      <button class="modal-close" id="close-goal-modal" aria-label="Close">&times;</button>
+    </div>
+    <form id="goal-form">
+      <div class="form-row">
+        <label>Goal type</label>
+        <div class="goal-toggle">
+          <label><input type="radio" name="goal_type" value="lose"> Lose weight</label>
+          <label><input type="radio" name="goal_type" value="maintain"> Maintain</label>
+          <label><input type="radio" name="goal_type" value="gain"> Gain weight</label>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="goal-target-weight">Target weight (kg)</label>
+          <input type="number" id="goal-target-weight" name="target_weight_kg" step="0.1" min="1" max="500" required>
+        </div>
+        <div class="form-row">
+          <label for="goal-target-date">Target date <span class="form-row__hint">optional</span></label>
+          <input type="date" id="goal-target-date" name="target_date">
+        </div>
+      </div>
+      <div id="goal-error" class="form-error" style="display:none;"></div>
+      <button type="submit" class="btn-primary btn-primary--full">Save Goal</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/goals.js') }}"></script>
+{% endblock %}

@@ -1,7 +1,8 @@
 __pycache__/
 *.pyc
 .env
-bmi_records.db
+*.db
 .vercel
 venv/
 .DS_Store
+.pytest_cache/
