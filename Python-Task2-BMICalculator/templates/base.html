@@ -70,6 +70,14 @@
   </nav>
 
   <main class="app-main">
+    {% if storage_unstable %}
+    <div class="form-error" role="alert" style="margin-bottom:16px;">
+      <strong>Storage not configured:</strong> this deployment has no
+      <code>DATABASE_URL</code> set, so data will not be saved between
+      requests. Set <code>DATABASE_URL</code> to a Postgres connection
+      string in your hosting provider's environment variables and redeploy.
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 
