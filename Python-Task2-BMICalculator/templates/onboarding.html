@@ -26,16 +26,6 @@
     <h1>Let's set your baseline</h1>
     <p class="onboarding-card__subtitle">This takes under a minute and powers your whole dashboard.</p>
 
-    {% if storage_unstable %}
-    <div class="form-error" role="alert">
-      <strong>Storage not configured:</strong> no <code>DATABASE_URL</code>
-      is set, so your info won't be saved after you submit — you'll be sent
-      right back here. Set <code>DATABASE_URL</code> to a Postgres
-      connection string in your hosting provider's environment variables
-      and redeploy.
-    </div>
-    {% endif %}
-
     {% if error %}
     <div class="form-error" role="alert">{{ error }}</div>
     {% endif %}

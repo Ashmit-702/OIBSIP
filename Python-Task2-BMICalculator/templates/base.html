@@ -22,6 +22,12 @@
 
 <div class="app-shell">
 
+  {% if db_persistence_warning %}
+  <div role="alert" style="background:#fef3cd;color:#664d03;border-bottom:1px solid #ffe69c;padding:10px 16px;font-size:14px;text-align:center;">
+    <strong>Data won't be saved.</strong> No database is connected on this deployment, so entries only live in a temporary file that Vercel wipes between requests. Set a <code>DATABASE_URL</code> (free Postgres via Neon or Supabase) in your Vercel project's Environment Variables, then redeploy.
+  </div>
+  {% endif %}
+
   <nav class="sidebar" aria-label="Primary navigation">
     <div class="sidebar__brand">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 21s-8-5.2-8-11.2C4 6.6 6.6 4 9.6 4c1.6 0 3 .7 3.9 2 .9-1.3 2.3-2 3.9-2 3 0 5.6 2.6 5.6 5.8C22.9 15.8 12 21 12 21z"/></svg>
@@ -70,14 +76,6 @@
   </nav>
 
   <main class="app-main">
-    {% if storage_unstable %}
-    <div class="form-error" role="alert" style="margin-bottom:16px;">
-      <strong>Storage not configured:</strong> this deployment has no
-      <code>DATABASE_URL</code> set, so data will not be saved between
-      requests. Set <code>DATABASE_URL</code> to a Postgres connection
-      string in your hosting provider's environment variables and redeploy.
-    </div>
-    {% endif %}
     {% block content %}{% endblock %}
   </main>
 
