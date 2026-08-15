@@ -15,8 +15,19 @@ from app.config import Config
 USE_POSTGRES = bool(Config.DATABASE_URL)
 
 if USE_POSTGRES:
-    import psycopg2
-    import psycopg2.extras
+    try:
+        import psycopg2
+        import psycopg2.extras
+    except ImportError as e:
+        # Don't let a broken/missing psycopg2 install crash the entire app at
+        # import time -- fall back to SQLite so the app stays usable, and
+        # surface a clear error only when something actually tries to use Postgres.
+        USE_POSTGRES = False
+        _POSTGRES_IMPORT_ERROR = e
+    else:
+        _POSTGRES_IMPORT_ERROR = None
+else:
+    _POSTGRES_IMPORT_ERROR = None
 
 
 class DatabaseError(Exception):
