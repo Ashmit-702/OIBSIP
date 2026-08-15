@@ -102,7 +102,7 @@ static/
   css/style.css             # design tokens, layout, components, responsive
   js/                        # one file per page + shared common.js
 tests/                    # 119 pytest tests across 6 files
-app.py                    # thin WSGI entrypoint (Vercel looks for this)
+main.py                   # thin WSGI entrypoint for Vercel (deliberately not app.py -- see note below)
 run.py                    # local dev entrypoint
 ```
 
@@ -229,7 +229,7 @@ ships with placeholders only.
 
 1. Push this repo to GitHub.
 2. Import it in Vercel — `vercel.json` is already configured to build
-   `app.py` with `@vercel/python` and serve `/static/*` directly.
+   `main.py` with `@vercel/python`. It is intentionally NOT named `app.py`: Vercel imports the entrypoint using its filename as the module name, so a file named `app.py` would collide with the top-level `app/` package and break `from app import create_app`.
 3. In the Vercel project's Environment Variables, set `SECRET_KEY` and
    (strongly recommended) `DATABASE_URL` pointing at a free Postgres
    instance (e.g. [Neon](https://neon.tech) or
