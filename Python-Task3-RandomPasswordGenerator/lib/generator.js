@@ -86,8 +86,8 @@ function coversAllClasses(chars, requiredClasses) {
 export function generatePassword(userOptions = {}) {
   const opts = { ...DEFAULT_OPTIONS, ...userOptions };
 
-  if (opts.length < 4) {
-    throw new PasswordPolicyError("Length must be at least 4 characters.");
+  if (opts.length < 8) {
+    throw new PasswordPolicyError("Length must be at least 8 characters.");
   }
 
   const pool = [...characterPool(opts)];
