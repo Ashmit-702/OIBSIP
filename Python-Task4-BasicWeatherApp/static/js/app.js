@@ -312,6 +312,7 @@ async function fetchWeather(query){
 
   const params = new URLSearchParams({ units: unit });
   if(query.type === 'city') params.set('city', query.value);
+  else if(query.type === 'zip') params.set('zip', query.value);
   else { params.set('lat', query.value.lat); params.set('lon', query.value.lon); }
 
   try{
@@ -399,10 +400,22 @@ function render(data){
 }
 
 /* ---- events ---- */
+/* ---- detect whether the typed input looks like a ZIP/postal code
+   (digits, optionally with a 2-letter country code) vs a city name ---- */
+function looksLikeZip(value){
+  return /^\d{3,10}(\s*,\s*[A-Za-z]{2})?$/.test(value.trim());
+}
+
+function buildQuery(value){
+  return looksLikeZip(value)
+    ? { type: 'zip', value: value.trim() }
+    : { type: 'city', value: value.trim() };
+}
+
 els.searchBtn.addEventListener('click', () => {
   const v = els.cityInput.value.trim();
-  if(!v){ setStatus('Type a city name first.', true); return; }
-  fetchWeather({ type: 'city', value: v });
+  if(!v){ setStatus('Enter a city name or ZIP code first.', true); return; }
+  fetchWeather(buildQuery(v));
 });
 els.cityInput.addEventListener('keydown', e => { if(e.key === 'Enter') els.searchBtn.click(); });
 

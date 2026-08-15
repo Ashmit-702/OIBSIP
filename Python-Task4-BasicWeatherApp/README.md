@@ -4,8 +4,22 @@ A weather app with a Flask backend and a vanilla JS/CSS frontend styled like a
 physical weather-station instrument panel (barograph trend line, sun-path arc,
 air-quality gauge) instead of the usual "card with an icon" template.
 
+## Task checklist
+
+| Requirement | Where it's implemented |
+|---|---|
+| City/ZIP input | `templates/index.html` search box; `looksLikeZip()` in `static/js/app.js` auto-detects which one you typed |
+| Weather API | OpenWeatherMap (current weather + forecast + air quality) via `services/weather_service.py` |
+| Temperature | `current.temp` / `current.feels_like` |
+| Humidity | `current.humidity` |
+| Condition | `current.description` + icon |
+| Wind speed | `current.wind_speed` (+ compass direction) |
+| API error handling | `services/exceptions.py` custom exceptions → mapped to HTTP status in `app.py`; frontend shows a real error banner |
+| Empty input validation | Client-side (`static/js/app.js`, before the request is even sent) and server-side (`app.py`, whitespace-only input is rejected too) |
+
 The frontend never talks to OpenWeatherMap directly — it only calls this
 server's own `/api/*` routes, so the API key stays server-side.
+
 
 ## Setup
 

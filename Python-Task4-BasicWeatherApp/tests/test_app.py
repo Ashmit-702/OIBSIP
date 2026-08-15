@@ -40,6 +40,23 @@ def test_weather_rejects_bad_units(client):
     assert resp.status_code == 400
 
 
+def test_weather_rejects_whitespace_only_city(client):
+    resp = client.get("/api/weather?city=%20%20")
+    assert resp.status_code == 400
+
+
+def test_weather_accepts_zip_param(client):
+    with patch("app.get_weather") as mock_weather:
+        mock_weather.return_value = {
+            "location": {"name": "Mumbai", "country": "IN", "lat": 19.07, "lon": 72.87},
+        }
+        resp = client.get("/api/weather?zip=400001,IN")
+    assert resp.status_code == 200
+    _, kwargs = mock_weather.call_args
+    assert kwargs["zip_code"] == "400001,IN"
+    assert kwargs["city"] is None
+
+
 def test_history_starts_empty(client):
     resp = client.get("/api/history")
     assert resp.status_code == 200

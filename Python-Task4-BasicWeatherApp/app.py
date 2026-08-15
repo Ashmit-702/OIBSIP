@@ -49,17 +49,18 @@ def index():
 @app.route("/api/weather")
 def api_weather():
     city = request.args.get("city", "").strip() or None
+    zip_code = request.args.get("zip", "").strip() or None
     lat = request.args.get("lat", type=float)
     lon = request.args.get("lon", type=float)
     units = request.args.get("units", "metric")
 
     if units not in ("metric", "imperial"):
         return jsonify({"error": "units must be 'metric' or 'imperial'"}), 400
-    if not city and (lat is None or lon is None):
-        return jsonify({"error": "Provide either ?city= or both ?lat= and ?lon="}), 400
+    if not city and not zip_code and (lat is None or lon is None):
+        return jsonify({"error": "Provide ?city=, ?zip=, or both ?lat= and ?lon="}), 400
 
     try:
-        data = get_weather(api_key=API_KEY, city=city, lat=lat, lon=lon, units=units)
+        data = get_weather(api_key=API_KEY, city=city, zip_code=zip_code, lat=lat, lon=lon, units=units)
     except WeatherServiceError as exc:
         logger.warning("weather lookup failed: %s", exc)
         return jsonify({"error": str(exc)}), exc.status_code

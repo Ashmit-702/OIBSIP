@@ -77,10 +77,12 @@ def _get(url: str, params: dict) -> dict:
 
 
 def _fetch_current(lat: float | None, lon: float | None, city: str | None,
-                    units: str, api_key: str) -> dict:
+                    zip_code: str | None, units: str, api_key: str) -> dict:
     params = {"units": units, "appid": api_key}
     if city:
         params["q"] = city
+    elif zip_code:
+        params["zip"] = zip_code
     else:
         params["lat"] = lat
         params["lon"] = lon
@@ -212,20 +214,20 @@ def _daily_forecast(forecast_json: dict) -> list[dict]:
     return days
 
 
-def get_weather(*, api_key: str, city: str | None = None,
+def get_weather(*, api_key: str, city: str | None = None, zip_code: str | None = None,
                  lat: float | None = None, lon: float | None = None,
                  units: str = "metric") -> dict:
     """Main entry point used by the Flask route.
 
-    Pass either `city` or (`lat`, `lon`). Returns a plain dict ready to
-    be jsonify()'d.
+    Pass exactly one of: `city`, `zip_code`, or (`lat`, `lon`). Returns a
+    plain dict ready to be jsonify()'d.
     """
     if not api_key:
         raise InvalidAPIKeyError("No OpenWeatherMap API key is configured on the server.")
-    if not city and (lat is None or lon is None):
-        raise WeatherServiceError("Provide either a city name or lat/lon coordinates.")
+    if not city and not zip_code and (lat is None or lon is None):
+        raise WeatherServiceError("Provide a city name, a ZIP/postal code, or lat/lon coordinates.")
 
-    cache_key = f"{city or f'{lat:.3f},{lon:.3f}'}|{units}"
+    cache_key = f"{city or zip_code or f'{lat:.3f},{lon:.3f}'}|{units}"
     cached = _cache.get(cache_key)
     if cached is not None:
         logger.info("cache hit for %s", cache_key)
@@ -233,7 +235,7 @@ def get_weather(*, api_key: str, city: str | None = None,
 
     start = time.monotonic()
 
-    current = _fetch_current(lat, lon, city, units, api_key)
+    current = _fetch_current(lat, lon, city, zip_code, units, api_key)
     resolved_lat = current["coord"]["lat"]
     resolved_lon = current["coord"]["lon"]
 

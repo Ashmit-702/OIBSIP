@@ -12,7 +12,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from services.cache import TTLCache
-from services.exceptions import CityNotFoundError, InvalidAPIKeyError
+from services.exceptions import CityNotFoundError, InvalidAPIKeyError, WeatherServiceError
 from services.weather_service import deg_to_compass, get_weather, _sun_progress, classify_sky, advisory
 from services import weather_service
 
@@ -185,3 +185,25 @@ def test_get_weather_bad_api_key(mock_get):
 def test_get_weather_requires_key():
     with pytest.raises(InvalidAPIKeyError):
         get_weather(api_key="", city="Mumbai")
+
+
+@patch("services.weather_service.requests.get")
+def test_get_weather_by_zip_code(mock_get):
+    def side_effect(url, params, timeout):
+        if "air_pollution" in url:
+            return _mock_response(json_data=AQI_JSON)
+        if "forecast" in url:
+            return _mock_response(json_data=FORECAST_JSON)
+        # confirm the zip param was actually sent, not q=
+        assert params.get("zip") == "400001,IN"
+        assert "q" not in params
+        return _mock_response(json_data=CURRENT_JSON)
+
+    mock_get.side_effect = side_effect
+    result = get_weather(api_key="fake-key", zip_code="400001,IN", units="metric")
+    assert result["location"]["name"] == "Mumbai"
+
+
+def test_get_weather_requires_city_zip_or_coords():
+    with pytest.raises(WeatherServiceError):
+        get_weather(api_key="fake-key")
